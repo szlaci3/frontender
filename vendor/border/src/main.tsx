@@ -13,7 +13,6 @@ import {
 } from "../shared/border.ts";
 import { aiImage, cropImage, download, upload, type Source } from "./images.ts";
 
-
 const samples = [
   { id: "tile", name: "Terracotta", description: "A little Mediterranean." },
   { id: "stamp", name: "Postage", description: "Something worth sending." },
@@ -170,14 +169,24 @@ function QuadControl({
     </section>
   );
 }
-export function BorderLab({onApply}: {onApply: (settings: Settings, source: Source) => Promise<void>}) {
-  const [settings, setSettings] = useState<Settings>(structuredClone(initial));
-  const [source, setSource] = useState<Source>({
-    url: "/samples/tile.svg",
-    name: "tile.svg",
-    width: 160,
-    height: 160,
-  });
+export function BorderLab({
+  onApply,
+  initialBorder,
+}: {
+  onApply: (settings: Settings, source: Source) => Promise<void>;
+  initialBorder?: { settings: Settings; source: Source };
+}) {
+  const [settings, setSettings] = useState<Settings>(() =>
+    structuredClone(initialBorder?.settings ?? initial),
+  );
+  const [source, setSource] = useState<Source>(
+    initialBorder?.source ?? {
+      url: "/samples/tile.svg",
+      name: "tile.svg",
+      width: 160,
+      height: 160,
+    },
+  );
   const [tab, setTab] = useState("explore"),
     [shape, setShape] = useState("wide"),
     [background, setBackground] = useState("paper"),
@@ -342,7 +351,14 @@ export function BorderLab({onApply}: {onApply: (settings: Settings, source: Sour
   );
   return (
     <>
-      <header><button onClick={() => { void onApply(settings, source).catch(e => setError(e.message)); }}>Preview border in workspace ↗</button>
+      <header>
+        <button
+          onClick={() => {
+            void onApply(settings, source).catch((e) => setError(e.message));
+          }}
+        >
+          Preview border in workspace ↗
+        </button>
         <a className="brand" href="#" aria-label="Border Image Lab home">
           <span className="brand-icon">▧</span> border
           <span className="brand-light">/</span>image{" "}
@@ -1079,5 +1095,3 @@ export function BorderLab({onApply}: {onApply: (settings: Settings, source: Sour
     </>
   );
 }
-
-

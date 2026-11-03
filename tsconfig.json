@@ -17,6 +17,7 @@
   "include": [
     "src",
     "server",
+    "netlify",
     "vite.config.ts",
     "tests",
     "playwright.config.ts"

@@ -7,7 +7,10 @@ The owning application is `src/`. Reusable source was copied from Colombia, Styl
 - `design.tsx`: Formlane block rendering, semantic Styler selector adapter, sanitization, standalone ZIP export.
 - `Preview.tsx`: sandboxed document preview and source-checked selection/navigation messages.
 - `Shadow.tsx`: style isolation for trusted Formlane components and the optional copied Border Image editor.
+- `imports.ts`: additive text/table import and current-page imported-theme adaptation. Imported styles stage a preview before committing; validated custom palettes and extraction evidence are portable page data.
+- `border-source.ts`: full-resolution, alpha-preserving PNG embedding with the workspace source-size bound. Border Image is mounted lazily and retained while hidden, preserving its session. Explicit Load applied border remounts it from the selected target's persisted source/settings.
 - `vite.config.ts`: server-only API adapters; Styler and Border Image have separate endpoint namespaces. Existing provider implementations and validation remain in their copied modules.
+- `netlify/functions/import-{style,content}.mts`: production wrappers around the copied URL import handlers, retaining public-address validation, bounded requests and extraction, and declared rate limits. These imports do not invoke an AI provider.
 
 Each page contains a template kind, editable blocks or HTML, custom CSS, applied style layers, embedded border sources, and an optional screenshot. Page IDs are immutable. A style targets the page or a component ID. HTML element IDs are deterministic within the parsed source; saving changed HTML clears component-specific layers because its structure may have changed. Existing page-wide styles remain.
 

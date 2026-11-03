@@ -19,6 +19,8 @@ Open http://127.0.0.1:5180. The existing root `.env` is used only by the server.
 - Multiple named pages with shared navigation. Add/remove/reorder blocks; edit text, products, tables and Kanban cards using the original components.
 - Styler's presets, initial Rosewater design, local Joker/Harlequin and four AI expressions. Whole-page or selected-component scope. Declaration editing and generation locks. Explicit preview, apply/discard, undo/redo.
 - The copied Border Image editor: samples, upload, crop, slice/width/outset/repeat controls and AI assistance. Its explicit handoff embeds the rasterized source in the workspace, then requires Apply.
+- Border drafts stay available when switching tools. Load an applied border back into the editor, including after reopening a project. Handoffs preserve original dimensions and transparency; images exceeding the embedded-source limit are rejected with a visible error.
+- Website and Markdown imports: review detected colors and source evidence, preview a website style on the current page, then apply or discard. Review and select webpage/Markdown text and tables before adding them to a visual block page. Existing content remains intact; imports are undoable.
 - One locally autosaved workspace. Download/reopen `.frontender.json` files. Import by replacing with confirmation or adding pages without removing current work.
 - Screenshot references alongside each page. Standalone HTML/CSS/JavaScript website ZIP export with linked pages and demo forms.
 - Reviewed Formlane AI content proposals and the existing voice conversation UI. Voice offers guidance; it does not inspect or modify the workspace.
@@ -31,6 +33,8 @@ Standalone export includes a page snapshot, embedded CSS and border images, navi
 
 The active workspace uses browser localStorage, with a visible error if its quota is exceeded. Screenshot uploads are limited to 2.5 MB; project import is limited to 16 MB and 40 pages. Download project files for durable backups. This MVP has no accounts, cloud sync, automatic project-version merging or React-project export.
 
+Use **Import → Import website / Markdown** for public HTTPS website styles/content or locally parsed Markdown. Imported styles affect the current page, replacing its page-wide Styler layer while keeping component layers and borders. Optional brand renaming changes the workspace name. Content imports append selected sections to visual block pages (24 sections maximum); HTML/contact-form pages can still review and download Markdown. Applied imported palettes and source evidence travel in project JSON. Border drafts last for the current session; only applied borders are autosaved. Embedded border images use full-resolution PNG, limited to 4,000,000 data-URL characters.
+
 ## Checks
 
 ```sh
@@ -41,4 +45,4 @@ npm run test:e2e
 
 Browser tests use installed Microsoft Edge and a dedicated local server on port 5181. They cover preview/apply/undo, editing and reload, scoped styles, border handoff, HTML isolation, project round-trips, downloads and responsive layout. Provider requests are tested separately from offline/browser behavior; a passing local build is not proof of live AI or microphone functionality.
 
-The production frontend builds to `dist/`. This repository has not been deployed; its API adapters currently run with the local development server. A production host needs matching server routes. See [architecture](docs/architecture.md) and [verification](docs/verification.md).
+The production frontend builds to `dist/`. Frontender is deployed at [szlaci3-frontender.netlify.app](https://szlaci3-frontender.netlify.app/) (reported by the owner on 3 November 2026). `netlify.toml` builds the frontend and packages the website style/content import functions. The other AI/voice routes still have local development adapters; this change does not add their production deployment. See [architecture](docs/architecture.md) and [verification](docs/verification.md) for verified behavior and remaining scope.

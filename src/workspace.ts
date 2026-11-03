@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  customThemeSchema,
+  styleImportSchema,
+} from "../vendor/formlane/src/theme";
+import {
   blockSchema,
   createProject,
   type PageId,
@@ -54,11 +58,13 @@ export const pageSchema = z.object({
   styles: z.array(z.object({ target: id, style })).max(100),
   borders: z.array(border).max(50),
   reference: image.optional(),
+  importedStyle: styleImportSchema.optional(),
   builderTheme: z
     .object({
       preset: z.enum(["grove", "atelier", "tide", "mono"]),
       font: z.enum(["serif", "sans"]),
       radius: z.number().int().min(0).max(24),
+      custom: customThemeSchema.optional(),
     })
     .optional(),
 });

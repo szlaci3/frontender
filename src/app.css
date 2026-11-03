@@ -669,7 +669,7 @@ p {
   white-space: nowrap;
   font-size: 10px;
 }
-.workbench:has(.border-context) {
+.workbench:has(.border-workspace:not([hidden])) {
   grid-template-columns: 184px minmax(0, 1fr);
 }
 .declarations {
@@ -972,7 +972,7 @@ dialog::backdrop {
   .add-page {
     display: none;
   }
-  .workbench:has(.border-context) {
+  .workbench:has(.border-workspace:not([hidden])) {
     grid-template-columns: 1fr;
   }
   .canvas-toolbar input {

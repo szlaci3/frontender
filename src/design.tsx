@@ -49,13 +49,16 @@ export function styleCSS(style: Style, target = "page") {
 }
 export function pageCSS(page: Page) {
   const theme = page.builderTheme
-    ? themePresets[page.builderTheme.preset]
+    ? (page.builderTheme.custom ?? themePresets[page.builderTheme.preset])
     : null;
   const themeCSS = theme
     ? `.fe-page{--brand-accent:${theme.accent};--brand-surface:${theme.surface};--brand-ink:${theme.ink};--brand-soft:${theme.soft};--brand-font:${page.builderTheme!.font === "serif" ? "Georgia,serif" : "Arial,sans-serif"};--brand-radius:${page.builderTheme!.radius}px}.fe-page h1{font-family:var(--brand-font)}`
     : "";
   return (
     themeCSS +
+    (page.builderTheme?.custom
+      ? `.fe-page{background:var(--brand-surface);color:var(--brand-ink)}.fe-page h1,.fe-page h2,.fe-page h3{font-family:var(--brand-font)}.fe-page button,.fe-page .prototype-cta{background:var(--brand-accent);color:#fff;border-radius:var(--brand-radius)}`
+      : "") +
     "\n" +
     page.css +
     "\n" +
@@ -64,7 +67,7 @@ export function pageCSS(page: Page) {
     page.borders
       .map((b) =>
         borderCSS(b.settings, b.source)
-          .replaceAll(";", " !important;")
+          .replaceAll(";\n", " !important;\n")
           .replace(
             ".framed-box",
             b.target === "page" ? ".fe-page" : `[data-fe-id="${b.target}"]`,

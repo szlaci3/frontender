@@ -32,6 +32,8 @@ import {
 } from "../vendor/formlane/src/model";
 import { Dialog } from "../vendor/formlane/src/components/Dialog";
 import { Assistant } from "../vendor/formlane/src/components/Assistant";
+import { WebsiteImport } from "../vendor/formlane/src/components/WebsiteImport";
+import type { StyleImport } from "../vendor/formlane/src/theme";
 import { VoiceChat } from "../vendor/formlane/src/components/VoiceChat";
 import type { VoiceMessage } from "../vendor/formlane/src/voice-protocol";
 import { presets } from "../vendor/styler/src/styles/presets";
@@ -44,7 +46,9 @@ import {
 } from "../vendor/styler/shared/style";
 import type { Snapshot } from "../vendor/styler/shared/constraints";
 import { BorderLab } from "../vendor/border/src/main";
-import { aiImage } from "../vendor/border/src/images";
+import { loadImage, type Source } from "../vendor/border/src/images";
+import { embedBorderSource } from "./border-source";
+import { appendContent, withImportedStyle } from "./imports";
 import { css as borderCSS } from "../vendor/border/shared/border";
 import borderStyles from "../vendor/border/src/style.css?inline";
 import {
@@ -75,6 +79,7 @@ type Tab = "build" | "style" | "border";
 type Pending = {
   style?: Style;
   border?: Page["borders"][number];
+  importedStyle?: { result: StyleImport; brand: string | null };
   target: string;
 };
 function readSaved() {
@@ -103,7 +108,7 @@ export function App() {
   const page = w.pages.find((p) => p.id === w.activePage)!;
   const [tab, setTab] = useState<Tab>("build");
   const [modal, setModal] = useState<
-    "new" | "import" | "code" | "assistant" | "voice" | null
+    "new" | "import" | "website" | "code" | "assistant" | "voice" | null
   >(null);
   const [status, setStatus] = useState(
     initial.error || "Saved on this browser",
@@ -120,6 +125,14 @@ export function App() {
   const [code, setCode] = useState({ html: "", css: "" });
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [constraints, setConstraints] = useState<Snapshot>([]);
+  const [borderOpened, setBorderOpened] = useState(false);
+  const [borderEditor, setBorderEditor] = useState<{
+    revision: number;
+    initial?: { settings: Page["borders"][number]["settings"]; source: Source };
+  }>({ revision: 0 });
+  useEffect(() => {
+    if (tab === "border") setBorderOpened(true);
+  }, [tab]);
   const projectFile = useRef<HTMLInputElement>(null),
     referenceFile = useRef<HTMLInputElement>(null);
   const generation = useGeneration();
@@ -145,12 +158,13 @@ export function App() {
       setStatus(
         "This change exceeds the workspace limits. Export your work or remove unused content.",
       );
-      return;
+      return false;
     }
     dispatch({ type: "set", value: next });
+    return true;
   }
   function patchPage(patch: Partial<Page>) {
-    commit({
+    return commit({
       ...w,
       pages: w.pages.map((p) => (p.id === page.id ? { ...p, ...patch } : p)),
     });
@@ -178,6 +192,9 @@ export function App() {
     setTab("build");
   }
   const target = scope === "component" ? selected : "page";
+  const borderContext = useRef("");
+  borderContext.current = `${page.id}:${target}`;
+  const appliedBorder = page.borders.find((border) => border.target === target);
   function choose(style: Style) {
     if (!target) {
       setStatus("Select a component in the preview first.");
@@ -187,7 +204,23 @@ export function App() {
   }
   function apply() {
     if (!pending) return;
-    patchPage(
+    if (pending.importedStyle) {
+      const { result, brand } = pending.importedStyle;
+      if (
+        commit({
+          ...w,
+          name: brand ?? w.name,
+          pages: w.pages.map((p) =>
+            p.id === page.id ? withImportedStyle(p, result) : p,
+          ),
+        })
+      ) {
+        setPending(null);
+        setStatus("Website style applied to this page. Undo is available.");
+      }
+      return;
+    }
+    const applied = patchPage(
       pending.style
         ? {
             styles: [
@@ -202,14 +235,19 @@ export function App() {
             ],
           },
     );
-    setPending(null);
-    setStatus("Applied. Undo is available.");
+    if (applied) {
+      setPending(null);
+      setStatus("Applied. Undo is available.");
+    }
   }
+  const previewPage = pending?.importedStyle
+    ? withImportedStyle(page, pending.importedStyle.result)
+    : page;
   const previewCSS = pending?.style
     ? styleCSS(pending.style, pending.target)
     : pending?.border
       ? borderCSS(pending.border.settings, pending.border.source)
-          .replaceAll(";", " !important;")
+          .replaceAll(";\n", " !important;\n")
           .replace(
             ".framed-box",
             pending.target === "page"
@@ -456,8 +494,8 @@ export function App() {
               </button>
             </div>
           </div>
-          {tab === "border" ? (
-            <>
+          {borderOpened && (
+            <div className="border-workspace" hidden={tab !== "border"}>
               <div className="border-context">
                 <Frame size={18} />
                 <div>
@@ -471,11 +509,45 @@ export function App() {
                   </p>
                 </div>
                 <button onClick={() => setTab("style")}>Choose target ↗</button>
+                <button
+                  disabled={!appliedBorder}
+                  onClick={async () => {
+                    if (!appliedBorder) return;
+                    const context = borderContext.current;
+                    try {
+                      const image = await loadImage(appliedBorder.source);
+                      if (context !== borderContext.current) return;
+                      setBorderEditor((old) => ({
+                        revision: old.revision + 1,
+                        initial: {
+                          settings: structuredClone(appliedBorder.settings),
+                          source: {
+                            url: appliedBorder.source,
+                            name: "applied-border.png",
+                            width: image.naturalWidth,
+                            height: image.naturalHeight,
+                          },
+                        },
+                      }));
+                    } catch {
+                      setStatus("The applied border could not be opened.");
+                    }
+                  }}
+                >
+                  Load applied border
+                </button>
               </div>
               <Shadow css={borderStyles}>
                 <BorderLab
+                  key={borderEditor.revision}
+                  initialBorder={borderEditor.initial}
                   onApply={async (settings, source) => {
-                    const image = await aiImage(source);
+                    const context = borderContext.current;
+                    const image = await embedBorderSource(source);
+                    if (context !== borderContext.current)
+                      throw new Error(
+                        "The selected page or target changed. Preview the border again.",
+                      );
                     const t = target || "page";
                     setPending({
                       target: t,
@@ -485,8 +557,9 @@ export function App() {
                   }}
                 />
               </Shadow>
-            </>
-          ) : (
+            </div>
+          )}
+          {tab !== "border" && (
             <div className={`canvas-area ${mobile ? "narrow" : ""}`}>
               <div className="canvas-caption">
                 <span>
@@ -570,7 +643,7 @@ export function App() {
               ) : (
                 <Preview
                   workspace={w}
-                  page={page}
+                  page={previewPage}
                   mobile={mobile}
                   selected={tab === "style" ? selected : ""}
                   css={previewCSS}
@@ -591,8 +664,13 @@ export function App() {
                   <div>
                     <Sparkles size={18} />
                     <span>
-                      <strong>{pending.style?.name ?? "Border image"}</strong> ·
-                      Preview only ·{" "}
+                      <strong>
+                        {pending.style?.name ??
+                          (pending.importedStyle
+                            ? "Imported website style"
+                            : "Border image")}
+                      </strong>{" "}
+                      · Preview only ·{" "}
                       {pending.target === "page"
                         ? "Whole page"
                         : "Selected component"}
@@ -1079,6 +1157,13 @@ export function App() {
           }}
         >
           <div className="import-options">
+            <button className="wide-button" onClick={() => setModal("website")}>
+              <Upload size={20} />
+              <span>
+                Import website / Markdown
+                <small>Review website styles or add selected content</small>
+              </span>
+            </button>
             <button
               className="wide-button"
               onClick={() => projectFile.current?.click()}
@@ -1144,6 +1229,9 @@ export function App() {
                     setModal(null);
                     clearPreview();
                     setStorageBlocked(false);
+                    setBorderOpened(false);
+                    setBorderEditor((old) => ({ revision: old.revision + 1 }));
+                    setTab("build");
                   }
                 }}
               >
@@ -1152,6 +1240,51 @@ export function App() {
             </div>
           )}
         </Dialog>
+      )}
+      {modal === "website" && (
+        <div className="website-import-dialog">
+          <WebsiteImport
+            close={() => setModal(null)}
+            destination={page.name}
+            apply={(result, brand) => {
+              setPending({ target: "page", importedStyle: { result, brand } });
+              setScope("page");
+              setConstraints([]);
+              setTab("style");
+              setModal(null);
+            }}
+            content={{
+              slots:
+                page.kind === "html" || page.kind === "form"
+                  ? 0
+                  : 24 - page.blocks.length,
+              destination: page.name,
+              unavailableReason:
+                page.kind === "html" || page.kind === "form"
+                  ? "To add editable sections, close this dialog and choose or create a visual block page. You can still copy or download Markdown here."
+                  : undefined,
+              apply: (sections) => {
+                try {
+                  const next = appendContent(page, sections);
+                  if (
+                    commit({
+                      ...w,
+                      pages: w.pages.map((p) => (p.id === page.id ? next : p)),
+                    })
+                  ) {
+                    clearPreview();
+                    setModal(null);
+                    setTab("build");
+                    setPreviewMode(false);
+                    setStatus("Selected content added. Undo is available.");
+                  }
+                } catch (error) {
+                  setStatus((error as Error).message);
+                }
+              },
+            }}
+          />
+        </div>
       )}
       {modal === "code" && (
         <Dialog title="HTML & CSS" close={() => setModal(null)} wide>

@@ -1,0 +1,725 @@
+/* Formlane import UI, scoped to the shared workspace dialog. */
+.website-import-dialog .import-style-note .button {
+  margin-top: 14px;
+}
+.website-import-dialog .website-import-tabs,
+.website-import-dialog .content-views {
+  display: flex;
+  gap: 5px;
+  border: 1px solid #dce4d1;
+  border-radius: 7px;
+  background: #f0f4e8;
+  padding: 4px;
+  margin-bottom: 23px;
+}
+.website-import-dialog .website-import-tabs button,
+.website-import-dialog .content-views button {
+  padding: 9px 15px;
+  font-size: 12px;
+  border-radius: 5px;
+  flex: 1;
+  color: #5f6c54;
+}
+.website-import-dialog .website-import-tabs button.active,
+.website-import-dialog .content-views button.active {
+  background: #fff;
+  color: #35472b;
+  box-shadow: 0 1px 3px #20321812;
+}
+.website-import-dialog .content-export {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.website-import-dialog .content-export > span {
+  font-size: 11px;
+  color: #5f6c54;
+}
+.website-import-dialog .content-export > div {
+  display: flex;
+  gap: 7px;
+}
+.website-import-dialog .content-export .button {
+  font-size: 10px;
+}
+.website-import-dialog .content-views {
+  margin-bottom: 15px;
+}
+.website-import-dialog .selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #5f6c54;
+  gap: 12px;
+  margin-bottom: 13px;
+  flex-wrap: wrap;
+}
+.website-import-dialog .selection-summary > div {
+  display: flex;
+  gap: 10px;
+}
+.website-import-dialog .selection-summary button {
+  padding: 0;
+  text-decoration: underline;
+  font-size: 10px;
+}
+.website-import-dialog .content-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 365px;
+  overflow-y: auto;
+  padding: 3px;
+}
+.website-import-dialog .content-input-toggle,
+.website-import-dialog .content-type-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 17px;
+}
+.website-import-dialog .content-input-toggle button,
+.website-import-dialog .content-type-filters button {
+  padding: 7px 12px;
+  border: 1px solid #d5deca;
+  border-radius: 5px;
+  font-size: 11px;
+  color: #536448;
+  background: #fff;
+}
+.website-import-dialog .content-input-toggle button[aria-pressed="true"],
+.website-import-dialog .content-type-filters button[aria-pressed="true"] {
+  background: #e9efdf;
+  border-color: #8d9f79;
+  color: #35472b;
+}
+.website-import-dialog .markdown-import-form > label,
+.website-import-dialog .content-filter > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 550;
+  margin: 14px 0 8px;
+}
+.website-import-dialog .markdown-import-form > input,
+.website-import-dialog .content-filter > input {
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  padding: 10px 12px;
+  border: 1px solid #d5deca;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.website-import-dialog .markdown-import-form > textarea {
+  width: 100%;
+  min-height: 210px;
+  resize: vertical;
+  padding: 13px;
+  border: 1px solid #d5deca;
+  border-radius: 6px;
+  background: #fff;
+  color: #35422d;
+  font:
+    12px/1.7 Consolas,
+    monospace;
+}
+.website-import-dialog .markdown-import-form > p,
+.website-import-dialog .pasted-source,
+.website-import-dialog .selection-order-note,
+.website-import-dialog .content-empty {
+  font-size: 10px;
+  color: #5f6c54;
+  line-height: 1.8;
+  margin-top: 9px;
+}
+.website-import-dialog .markdown-import-form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.website-import-dialog .markdown-import-form .button {
+  font-size: 12px;
+}
+.website-import-dialog .content-type-filters {
+  margin: 10px 0 15px;
+}
+.website-import-dialog .selection-summary small {
+  display: block;
+  font-size: 10px;
+  margin-top: 5px;
+  line-height: 1.7;
+}
+.website-import-dialog .content-section-card {
+  border: 1px solid #dde5d3;
+  border-radius: 7px;
+  background: #fff;
+}
+.website-import-dialog .content-section-card.chosen {
+  background: #f0f5e8;
+  border-color: #adbd97;
+}
+.website-import-dialog .content-section-choice {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 15px;
+  cursor: pointer;
+}
+.website-import-dialog .section-preview-toggle {
+  display: block;
+  font-size: 10px;
+  padding: 0;
+  text-decoration: underline;
+  color: #536448;
+  margin: -3px 15px 13px 71px;
+}
+.website-import-dialog .section-full-preview {
+  border-top: 1px solid #dde5d3;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.website-import-dialog .section-full-preview > p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .content-table-preview {
+  max-height: 260px;
+  overflow: auto;
+}
+.website-import-dialog .content-table-preview table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 11px;
+}
+.website-import-dialog .content-table-preview th,
+.website-import-dialog .content-table-preview td {
+  min-width: 100px;
+  max-width: 260px;
+  border: 1px solid #d5deca;
+  padding: 8px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .content-table-preview th {
+  background: #e9efdf;
+}
+.website-import-dialog .selection-summary button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (max-width: 600px) {
+  .website-import-dialog .section-preview-toggle {
+    margin-left: 59px;
+  }
+}
+.website-import-dialog .content-section-choice input {
+  accent-color: #536b48;
+  margin: 3px 0 0;
+  flex-shrink: 0;
+}
+.website-import-dialog .content-section-icon {
+  color: #5f6c54;
+  padding-top: 2px;
+}
+.website-import-dialog .content-section-copy {
+  min-width: 0;
+}
+.website-import-dialog .content-section-copy strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .content-section-copy small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.8;
+  color: #5f6c54;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-top: 4px;
+}
+.website-import-dialog .table-preview-label {
+  display: block;
+  font-size: 10px;
+  color: #5f6c54;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .markdown-output {
+  display: block;
+  width: 100%;
+  min-height: 330px;
+  resize: vertical;
+  border: 1px solid #d9e2cb;
+  border-radius: 7px;
+  background: #fff;
+  color: #35422d;
+  padding: 15px;
+  font:
+    11px/1.8 Consolas,
+    monospace;
+  tab-size: 2;
+}
+.website-import-dialog .content-status {
+  color: #415831;
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 18px;
+}
+.website-import-dialog .content-example {
+  font-size: 10px;
+  color: #536b48;
+  text-decoration: underline;
+  margin-top: 7px;
+  padding: 0;
+}
+@media (max-width: 600px) {
+  .website-import-dialog .content-export {
+    align-items: start;
+    flex-direction: column;
+  }
+  .website-import-dialog .content-export > div {
+    width: 100%;
+  }
+  .website-import-dialog .content-export .button {
+    flex: 1;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+  .website-import-dialog .selection-summary {
+    font-size: 10px;
+  }
+  .website-import-dialog .content-section-choice {
+    padding: 12px;
+    gap: 8px;
+  }
+}
+.website-import-dialog .workspace-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+.website-import-dialog .introduction-video {
+  margin: 18px 0 25px;
+}
+.website-import-dialog .introduction-video video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: #111;
+}
+.website-import-dialog .introduction-video figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  color: #5f6c54;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.website-import-dialog .introduction-video figcaption a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: underline;
+}
+.website-import-dialog .video-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #d4b29e;
+  border-radius: 7px;
+  background: #fff7ef;
+  color: #743b26;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.website-import-dialog .drawer-close {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+}
+.website-import-dialog .style-import-form > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 550;
+  margin-bottom: 8px;
+}
+.website-import-dialog .style-import-form > div {
+  display: flex;
+  gap: 9px;
+}
+.website-import-dialog .style-import-form input[type="url"] {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #d5deca;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fff;
+  font-size: 13px;
+}
+.website-import-dialog .style-import-form .button {
+  height: 39px;
+  font-size: 12px;
+}
+.website-import-dialog .style-import-form > p {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #5f6c54;
+  margin-top: 9px;
+}
+.website-import-dialog .import-error {
+  color: #7e3228;
+  background: #fff0e9;
+  border: 1px solid #e6c9bc;
+  border-radius: 7px;
+  padding: 13px 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 17px;
+}
+.website-import-dialog ul.import-error {
+  padding-left: 30px;
+}
+.website-import-dialog .import-progress {
+  padding: 21px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #546d3c;
+}
+.website-import-dialog .import-progress div {
+  flex: 1;
+}
+.website-import-dialog .import-progress strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.website-import-dialog .import-progress span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 5px;
+}
+.website-import-dialog .import-progress button {
+  font-size: 11px;
+  text-decoration: underline;
+}
+.website-import-dialog .spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  .website-import-dialog to {
+    transform: rotate(360deg);
+  }
+}
+.website-import-dialog .style-review {
+  border-top: 1px solid #dce4d1;
+  margin-top: 24px;
+  padding-top: 23px;
+}
+.website-import-dialog .style-source h3 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  margin: 7px 0;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .style-source a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  color: #5f6c54;
+  text-decoration: underline;
+}
+.website-import-dialog .detected-colors {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 21px 0;
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.website-import-dialog .detected-colors > div {
+  display: flex;
+  gap: 5px;
+}
+.website-import-dialog .detected-colors > div > button {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #8e998633;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+}
+.website-import-dialog .source-color-hint {
+  font-size: 10px;
+  color: #5f6c54;
+  margin: -10px 0 18px;
+}
+.website-import-dialog .style-evidence {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: #f0f4e8;
+  border: 1px solid #dce4d1;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.website-import-dialog .style-evidence summary {
+  cursor: pointer;
+  font-weight: 550;
+}
+.website-import-dialog .style-evidence p {
+  color: #5f6c54;
+  margin-top: 12px;
+}
+.website-import-dialog .style-evidence dl {
+  margin: 15px 0 0;
+}
+.website-import-dialog .style-evidence dl > div {
+  padding: 12px 0;
+  border-top: 1px solid #dce4d1;
+}
+.website-import-dialog .style-evidence dt {
+  font-weight: 600;
+}
+.website-import-dialog .style-evidence dt span {
+  font-weight: 400;
+  color: #5f6c54;
+  margin-left: 8px;
+}
+.website-import-dialog .style-evidence dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.website-import-dialog .style-evidence dd > * {
+  display: block;
+}
+.website-import-dialog .style-evidence dd strong {
+  font-weight: 500;
+}
+.website-import-dialog .style-evidence dd code {
+  font-size: 10px;
+  margin-top: 5px;
+}
+.website-import-dialog .style-evidence dd small {
+  font-size: 10px;
+  color: #5f6c54;
+}
+.website-import-dialog .detected-colors small {
+  margin-left: auto;
+  font-size: 10px;
+  color: #5f6c54;
+}
+.website-import-dialog .palette-review {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.website-import-dialog .palette-review label > span {
+  display: block;
+  font-size: 11px;
+  color: #5f6c54;
+  margin-bottom: 7px;
+}
+.website-import-dialog .palette-review label > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #dce3d2;
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px;
+}
+.website-import-dialog .palette-review input[type="color"] {
+  width: 26px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.website-import-dialog .palette-review code {
+  font-size: 10px;
+}
+.website-import-dialog .style-sample {
+  margin-top: 19px;
+  padding: 25px;
+  border: 1px solid #30352d15;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 15px;
+}
+.website-import-dialog .style-sample > div > span {
+  font-size: 9px;
+  letter-spacing: 1.3px;
+}
+.website-import-dialog .style-sample h3 {
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: -0.9px;
+  line-height: 1.2;
+  margin: 13px 0;
+}
+.website-import-dialog .style-sample p {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.website-import-dialog .sample-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.website-import-dialog .style-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin: 20px 0;
+}
+.website-import-dialog .style-details label {
+  font-size: 11px;
+}
+.website-import-dialog .style-details select {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #d5deca;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 12px;
+}
+.website-import-dialog .style-details input[type="range"] {
+  display: block;
+  accent-color: #536b48;
+  width: 100%;
+  margin-top: 20px;
+}
+.website-import-dialog .style-details label > span {
+  float: right;
+  font-size: 10px;
+  color: #5f6c54;
+}
+.website-import-dialog .rename-import label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+.website-import-dialog .rename-import input[type="checkbox"] {
+  accent-color: #536b48;
+}
+.website-import-dialog .rename-import > input {
+  border: 1px solid #d5deca;
+  padding: 9px;
+  border-radius: 5px;
+  margin-top: 10px;
+  width: 100%;
+  font-size: 12px;
+}
+.website-import-dialog .import-notes {
+  margin-top: 20px;
+  font-size: 11px;
+  color: #5f6c54;
+  line-height: 1.8;
+}
+.website-import-dialog .import-notes summary {
+  cursor: pointer;
+}
+.website-import-dialog .import-notes ul {
+  padding-left: 18px;
+  margin: 12px 0;
+}
+.website-import-dialog .import-notes li + li {
+  margin-top: 6px;
+}
+.website-import-dialog .import-apply {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 24px;
+  padding-top: 19px;
+  border-top: 1px solid #dce4d1;
+}
+.website-import-dialog .import-apply > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #5f6c54;
+}
+.website-import-dialog .import-apply .button {
+  font-size: 11px;
+  height: 37px;
+}
+@media (max-width: 600px) {
+  .website-import-dialog .workspace-heading {
+    flex-direction: column;
+    align-items: start;
+    gap: 16px;
+  }
+  .website-import-dialog .style-import-form > div,
+  .website-import-dialog .import-apply {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .website-import-dialog .palette-review {
+    grid-template-columns: 1fr 1fr;
+  }
+  .website-import-dialog .style-sample {
+    display: block;
+    padding: 20px;
+  }
+  .website-import-dialog .sample-button {
+    display: inline-flex;
+    margin-top: 17px;
+  }
+  .website-import-dialog .detected-colors small {
+    margin-left: 0;
+  }
+  .website-import-dialog .style-details {
+    gap: 16px;
+  }
+}
+
+.website-import-dialog .button.dark {
+  background: #354e40;
+  color: #fff;
+}
+.website-import-dialog input,
+.website-import-dialog textarea {
+  max-width: 100%;
+}
+.website-import-dialog .style-sample {
+  height: auto;
+}

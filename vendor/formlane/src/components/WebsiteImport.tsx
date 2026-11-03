@@ -11,7 +11,6 @@ import { Dialog } from "./Dialog";
 import { ContentImport } from "./ContentImport";
 import { StyleEvidence } from "./StyleEvidence";
 import type { ContentSection } from "../content";
-import { pageIds } from "../model";
 import {
   paletteProblems,
   styleImportSchema,
@@ -29,12 +28,15 @@ export function WebsiteImport({
   close,
   apply,
   content,
+  destination,
 }: {
   close: () => void;
   apply: (result: Result, brand: string | null) => void;
+  destination: string;
   content: {
     slots: number;
     destination: string;
+    unavailableReason?: string;
     apply: (sections: ContentSection[]) => void;
   };
 }) {
@@ -374,15 +376,14 @@ export function WebsiteImport({
               )}
               <div className="import-apply">
                 <span>
-                  <Check size={14} /> All {pageIds.length} templates. One
-                  undoable change.
+                  <Check size={14} /> Preview on {destination}, then apply.
                 </span>
                 <button
                   className="button dark"
                   disabled={problems.length > 0 || (rename && !brand.trim())}
                   onClick={() => apply(result, rename ? brand.trim() : null)}
                 >
-                  Apply to all templates <ArrowRight size={14} />
+                  Preview on current page <ArrowRight size={14} />
                 </button>
               </div>
             </div>

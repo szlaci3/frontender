@@ -22,12 +22,14 @@ export function ContentImport({
   slots,
   destination,
   apply,
+  unavailableReason,
 }: {
   url: string;
   setUrl: (url: string) => void;
   slots: number;
   destination: string;
   apply: (sections: ContentSection[]) => void;
+  unavailableReason?: string;
 }) {
   const [result, setResult] = useState<ContentReview | null>(null);
   const [input, setInput] = useState<"url" | "markdown">("url");
@@ -433,8 +435,8 @@ export function ContentImport({
           </details>
           {slots === 0 && (
             <p className="import-error" role="status">
-              This page already has 24 sections. You can still copy or download
-              Markdown, or remove a section before importing.
+              {unavailableReason ??
+                "This page already has 24 sections. You can still copy or download Markdown, or remove a section before importing."}
             </p>
           )}
           <div className="import-apply">

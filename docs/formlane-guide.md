@@ -14,9 +14,15 @@ Open Styler at any time. Choose Whole page or Selected component. To select a co
 
 Border Image is an optional tool users open deliberately. It supports samples, PNG/JPEG/WebP uploads, crop, slice, width, outset, repeat and AI help. Choose a target in Styler first, then open Border Image. Preview border in workspace transfers the border to the current target as a preview. Apply to design commits it. A rasterized image is embedded in the project and exported website.
 
+Switching tools retains the current border editor session, including its draft and conversation. Load applied border explicitly opens the selected target's saved image/settings, replacing the editor draft; it also works after reopening a project. Only applied borders survive reload. Workspace handoffs retain original dimensions and transparency using PNG; images above 4,000,000 data-URL characters must be cropped or replaced with a smaller image. No silent image resizing is performed.
+
 ## Import and save
 
 The workspace autosaves in this browser. Storage errors are visible; Save project downloads a JSON backup. Import a Frontender project to either add pages with unique names and IDs or replace the current workspace after confirmation. Export current work first before replacement. A screenshot can be attached as a visual reference; it is not automatically turned into code. Bring HTML/CSS adds a blank page; use Code to paste source. Imported scripts are removed.
+
+Import → Import website / Markdown opens Visual style and Page content. Visual style reads a public HTTPS website, shows detected colors and source evidence, and lets the user adjust the palette, headings and corners. Preview on current page stages the style; Apply to design commits it, Discard cancels, and Undo restores the previous design. This replaces the current page's page-wide Styler layer but keeps component layers and borders. Optional brand renaming changes the workspace name. Other pages remain unchanged.
+
+Page content reads a public URL or accepts Paste Markdown. Markdown parsing stays in the browser and makes no API or referenced-image requests. Search, filter and select text/table sections, inspect their previews, then add them to the current visual block page. Imports append content without removing existing sections, up to 24 total, in one undoable change. HTML/contact-form pages cannot receive visual blocks; choose a visual template first. Copy/download Markdown also works without adding content. Applied website palettes and their source evidence are included in saved project files.
 
 ## Export
 
