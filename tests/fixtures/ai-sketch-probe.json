@@ -1,0 +1,13 @@
+{
+  "localTestDate": "2026-11-02",
+  "timezone": "Europe/Brussels",
+  "agent": "antigravity-preview-09-2026",
+  "action": "analyze",
+  "providerCalls": 1,
+  "outcome": "rejected",
+  "applicationStatus": 502,
+  "error": "AI returned an incomplete or invalid result. Retry manually.",
+  "inputImage": "sketch-reference.png",
+  "expectedCrop": { "x": 18, "y": 28.125, "width": 64, "height": 50 },
+  "evidenceSource": "Observed probe stdout and generated reference geometry. The original provider envelope was not retained; its specific validation failure and crop accuracy cannot be determined. No retry was made."
+}

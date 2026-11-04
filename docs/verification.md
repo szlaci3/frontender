@@ -1,5 +1,11 @@
 # Verification — 2 November 2026
 
+## Border Image sketch rejection coverage
+
+The standalone BorderImage app recorded a live sketch-analysis rejection on 2 November 2026. Frontender replays the recorded application error in Edge and checks that the crop controls stay intact, only one request is made, and manual cropping still produces CSS. A synthetic provider response separately tests safe server rejection. The original provider payload was unavailable, so the cause of its rejection and its crop accuracy remain unknown.
+
+The opt-in diagnostic `node --experimental-transform-types tests/probe-border-sketch.mts` makes one live request through Frontender's copied provider handler and writes sanitized diagnostics on rejection under `test-results/`. This probe was not run as part of the regression checks.
+
 ## Production AI/voice integration — 4 November 2026
 
 - Added production assistant, voice-token and health functions; separate Styler/Border Image start/status/background/cleanup routes; bundled voice guide and declared platform rate limits.
