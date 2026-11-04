@@ -4,7 +4,7 @@
 
 The standalone BorderImage app recorded a live sketch-analysis rejection on 2 November 2026. Frontender replays the recorded application error in Edge and checks that the crop controls stay intact, only one request is made, and manual cropping still produces CSS. A synthetic provider response separately tests safe server rejection. The original provider payload was unavailable, so the cause of its rejection and its crop accuracy remain unknown.
 
-The opt-in diagnostic `node --experimental-transform-types tests/probe-border-sketch.mts` makes one live request through Frontender's copied provider handler and writes sanitized diagnostics on rejection under `test-results/`. This probe was not run as part of the regression checks.
+The opt-in diagnostic `node --experimental-transform-types tests/probe-border-sketch.mts` makes one live request through Frontender's copied provider handler and writes sanitized diagnostics on rejection under `test-results/`. A separate live run on 4 November 2026 sent one request. The provider returned HTTP 200 after 75.3 seconds with status `incomplete`, so the handler rejected it with HTTP 502. The captured JSON separately passed the result validator with three suggestions and a crop that exactly matched the generated reference. The provider did not report a completion reason in the retained diagnostics. No retry was made.
 
 ## Production AI/voice integration — 4 November 2026
 
