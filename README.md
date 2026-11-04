@@ -48,6 +48,7 @@ In Styler, edits and locks stage a preview; **Apply to design** commits it. **Un
 npm test
 npm run build
 npm run test:e2e
+npm run verify:functions
 ```
 
 Browser tests use installed Microsoft Edge and a dedicated local server on port 5181. They cover preview/apply/undo, editing and reload, scoped styles, border handoff, HTML isolation, project round-trips, downloads and responsive layout. Provider requests are tested separately from offline/browser behavior; a passing local build is not proof of live AI or microphone functionality.

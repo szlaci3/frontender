@@ -5,7 +5,8 @@
 - Added production assistant, voice-token and health functions; separate Styler/Border Image start/status/background/cleanup routes; bundled voice guide and declared platform rate limits.
 - Local checks: 120 unit tests, 23 Edge browser tests (one hosted-only check skipped), production build and credential scan passed. Browser execution required sandbox escalation.
 - Real local provider checks: Styler generation 19.4 s; assistant proposal 1.4 s; Border Image chat 10.7 s; voice-token creation 0.2 s. Each passed schema/shape validation. These are single requests, not reliability or quota tests. No microphone or audio playback was tested.
-- Hosted verification pending deployment of this change. Automatic approval review rejected the combined commit/push command because explicit authorization for a default-branch push/production deployment was required. No commit or push was performed; implementation remains local. The deployed voice route returned HTTP 404 before these changes.
+- Commit `03c7979` was pushed to `main` after explicit deployment authorization. Subsequent checks still found the old frontend asset `index-CJjYsBkb.js` and HTTP 404 for health, assistant and voice-token routes. GitHub reports no status checks or check runs for the commit. This does not identify the reason; Netlify deployment status/logs are required. Hosted provider verification remains blocked until the new build is published.
+- `npm run verify:functions`: passed using Netlify's function packager. All 13 functions packaged, all 9 API paths compiled, both workers use background invocation, both cleanups have hourly schedules, and the voice archive contains the exact product guide. This verifies local packaging, not Netlify deployment or runtime configuration.
 
 ## Styler, branding and editing update — 4 November 2026
 
