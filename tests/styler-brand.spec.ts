@@ -281,13 +281,21 @@ test("sections duplicate, reorder with keyboard drag, and respect text-field und
   expect(copied.pages[0].blocks).toHaveLength(
     before.pages[0].blocks.length + 1,
   );
-  await page
+  await page.evaluate(() => document.fonts.ready);
+  const handle = page
     .getByRole("button", { name: "Drag Hero section", exact: true })
-    .first()
-    .focus();
+    .first();
+  await handle.focus();
   await page.keyboard.press("Space");
+  await expect(handle).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("ArrowDown");
+  await expect(page.locator('[aria-live="assertive"]')).toContainText(
+    `was moved over droppable area ${copied.pages[0].blocks[1].id}`,
+  );
   await page.keyboard.press("Space");
+  await expect(
+    page.locator(".fe-page [data-block-id]").first(),
+  ).toHaveAttribute("data-block-id", copied.pages[0].blocks[1].id);
   const moved = await saved(page);
   expect(moved.pages[0].blocks[0].id).toBe(copied.pages[0].blocks[1].id);
   await page.getByRole("button", { name: "Preview", exact: true }).focus();
