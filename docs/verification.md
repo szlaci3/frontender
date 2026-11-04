@@ -1,5 +1,16 @@
 # Verification — 2 November 2026
 
+## Styler, branding and editing update — 4 November 2026
+
+- `npm test`: 91 passed. New coverage checks immutable bounded edits, Lock versus Unset, browser-value normalization, saved-style portability/collision handling, shared branding/new-page inheritance, and nested-ID duplication with scoped layers.
+- `npm run build`, `node tests/verify-build.mjs` (9 production files) and `git diff --check`: passed.
+- `npm run test:e2e`: 23 passed in installed Edge, with the hosted-only test skipped. Eight new scenarios cover computed inspection and applied-style editing, add/reset/delete validation, saved presets across reload/import, independent inspiration with captured Lock/Unset requests, brand preview/apply/undo and new-page inheritance, text-only assistant palette preservation, keyboard drag and undo shortcuts, and phone layout. Phone inspector and brand screenshots were inspected.
+- Provider requests in the generation scenario are mocked; the assistant example makes no provider request. Live providers and microphones were not tested in this slice. Browser checks required sandbox escalation; earlier launches were interrupted by approval-review usage limits before the successful runs.
+
+Run the new scenarios against the deployed build with `FRONTENDER_BASE_URL=https://szlaci3-frontender.netlify.app` and `npx playwright test tests/styler-brand.spec.ts tests/integration.spec.ts tests/hosted-imports.spec.ts`.
+
+Remaining original integration work: direct Formlane project-file migration, PDF handouts/shareable snapshots, and production AI/voice routes plus live-provider/microphone verification. Project libraries, accounts and automatic generation remain intentionally outside Frontender's scope.
+
 ## Integration update — 3 November 2026
 
 - `npm test`: 86 passed, including the copied Markdown, extraction, CSS cascade and public-URL validation tests, plus shared-workspace import/round-trip/undo checks.

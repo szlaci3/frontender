@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   customThemeSchema,
   styleImportSchema,
+  paletteSchema,
 } from "../vendor/formlane/src/theme";
 import {
   blockSchema,
@@ -39,6 +40,14 @@ const border = z.object({
     }
   }),
 });
+export const themeSchema = z.object({
+  preset: z.enum(["grove", "atelier", "tide", "mono"]),
+  font: z.enum(["serif", "sans"]),
+  radius: z.number().int().min(0).max(24),
+  custom: customThemeSchema.optional(),
+  palette: paletteSchema.optional(),
+});
+export type Theme = z.infer<typeof themeSchema>;
 export const pageSchema = z.object({
   id,
   name: z.string().trim().min(1).max(80),
@@ -59,14 +68,7 @@ export const pageSchema = z.object({
   borders: z.array(border).max(50),
   reference: image.optional(),
   importedStyle: styleImportSchema.optional(),
-  builderTheme: z
-    .object({
-      preset: z.enum(["grove", "atelier", "tide", "mono"]),
-      font: z.enum(["serif", "sans"]),
-      radius: z.number().int().min(0).max(24),
-      custom: customThemeSchema.optional(),
-    })
-    .optional(),
+  builderTheme: themeSchema.optional(),
 });
 export const workspaceSchema = z
   .object({
@@ -75,8 +77,18 @@ export const workspaceSchema = z
     name: z.string().trim().min(1).max(80),
     activePage: id,
     pages: z.array(pageSchema).min(1).max(40),
+    savedStyles: z.array(style).max(50).optional(),
+    brandTheme: themeSchema.optional(),
   })
   .superRefine((w, ctx) => {
+    if (
+      new Set(w.savedStyles?.map((s) => s.id)).size !==
+      (w.savedStyles?.length ?? 0)
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Duplicate saved style identifiers.",
+      });
     if (
       new Set(w.pages.map((p) => p.id)).size !== w.pages.length ||
       !w.pages.some((p) => p.id === w.activePage)
@@ -99,7 +111,7 @@ export const names = {
   html: "HTML / CSS",
 };
 export const newId = () => crypto.randomUUID();
-export function createPage(kind: Page["kind"]): Page {
+export function createPage(kind: Page["kind"], theme?: Theme): Page {
   return {
     id: newId(),
     name: names[kind],
@@ -117,6 +129,7 @@ export function createPage(kind: Page["kind"]): Page {
     css: "",
     styles: [],
     borders: [],
+    ...(theme ? { builderTheme: structuredClone(theme) } : {}),
   };
 }
 export function createWorkspace(): Workspace {
@@ -140,6 +153,13 @@ export function mergeWorkspace(
 ): Workspace {
   if (current.pages.length + incoming.pages.length > 40)
     throw new Error("A workspace can contain up to 40 pages.");
+  if (
+    (current.savedStyles?.length ?? 0) + (incoming.savedStyles?.length ?? 0) >
+    50
+  )
+    throw new Error(
+      "A workspace can contain up to 50 saved styles. Remove unused saved styles before adding this project.",
+    );
   const ids = new Map(incoming.pages.map((p) => [p.id, newId()]));
   const used = new Set(current.pages.map((p) => p.name));
   const pages = incoming.pages.map((p) => {
@@ -157,6 +177,19 @@ export function mergeWorkspace(
   return workspaceSchema.parse({
     ...current,
     pages: [...current.pages, ...pages],
+    ...(current.savedStyles || incoming.savedStyles
+      ? {
+          savedStyles: [
+            ...(current.savedStyles ?? []),
+            ...(incoming.savedStyles ?? []).map((style) => ({
+              ...style,
+              id: current.savedStyles?.some((s) => s.id === style.id)
+                ? `Saved_${newId()}`
+                : style.id,
+            })),
+          ],
+        }
+      : {}),
   });
 }
 export type History = {

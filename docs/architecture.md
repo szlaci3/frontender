@@ -3,9 +3,13 @@
 The owning application is `src/`. Reusable source was copied from Colombia, Styler and BorderImage into `vendor/formlane`, `vendor/styler` and `vendor/border`. These are independent copies, not symlinks or deployed-site embeds. The original repositories are not modified.
 
 - `workspace.ts`: versioned, validated portable JSON, page creation, collision-safe merge, bounded undo/redo.
+- Optional `savedStyles` and `brandTheme` workspace fields preserve compatibility with existing v1 JSON. Saved styles use Styler's bounded validator, have unique IDs and a 50-style limit, and are merged with collision remapping. There is no second persistence store.
+- `StyleInspector.tsx` / `style-tools.ts`: bounded CSS editing, effective lock overlays, generation-only Unset, and immutable saved-style snapshots. Pending styles replace the target's existing layer in preview so deleting a declaration reveals the underlying CSS rather than the old applied layer.
+- `BrandDialog.tsx` / `brand.ts`: explicit page/all-pages brand preview and atomic apply. The shared theme is inherited by newly created pages. `blocks.ts` handles duplication with fresh nested IDs, scoped style/border copies, and safe move/removal; the copied Formlane sortable controls supply pointer/keyboard dragging.
 - `App.tsx`: shared shell and explicit handoffs. One active workspace; no project library or accounts.
 - `design.tsx`: Formlane block rendering, semantic Styler selector adapter, sanitization, standalone ZIP export.
 - `Preview.tsx`: sandboxed document preview and source-checked selection/navigation messages.
+- Computed inspection uses application-owned iframe code and a per-document token. The parent accepts only known selector/property keys and bounded strings from the preview's actual window. Imported scripts never run; inspection does not grant same-origin access to the sandbox. Preview keyboard-history messages also require the actual preview window.
 - `Shadow.tsx`: style isolation for trusted Formlane components and the optional copied Border Image editor.
 - `imports.ts`: additive text/table import and current-page imported-theme adaptation. Imported styles stage a preview before committing; validated custom palettes and extraction evidence are portable page data.
 - `border-source.ts`: full-resolution, alpha-preserving PNG embedding with the workspace source-size bound. Border Image is mounted lazily and retained while hidden, preserving its session. Explicit Load applied border remounts it from the selected target's persisted source/settings.

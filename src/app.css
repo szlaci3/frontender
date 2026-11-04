@@ -1,4 +1,136 @@
 @import "@fontsource-variable/dm-sans";
+.style-choice {
+  min-width: 0;
+}
+.style-choice .style-tile {
+  width: 100%;
+}
+.inspire-button {
+  width: 100%;
+  font-size: 11px;
+  padding: 5px;
+}
+.inspire-button[aria-pressed="true"],
+.declaration-actions button[aria-pressed="true"] {
+  background: #dce9d6;
+  color: #284525;
+  border-color: #718b62;
+}
+.inspiration-note {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.style-inspector {
+  margin: 20px 0;
+}
+.style-inspector fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.style-inspector details {
+  border-top: 1px solid #dce3d4;
+  padding: 10px 0;
+}
+.style-inspector summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.declaration-row {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  min-width: 0;
+}
+.declaration-row > span {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.declaration-row input,
+.save-style input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #c5d0bd;
+  border-radius: 4px;
+  padding: 7px;
+  background: #fff;
+}
+.declaration-row small {
+  font-size: 10px;
+  color: #58674e;
+  overflow-wrap: anywhere;
+}
+.declaration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.declaration-actions button {
+  font-size: 10px;
+  padding: 4px 6px;
+  border: 1px solid #d8dfd1;
+}
+.css-add-form {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+}
+.css-add-form input {
+  min-width: 0;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #c5d0bd;
+  border-radius: 4px;
+}
+.css-edit-error {
+  color: #9b302c;
+  font-size: 11px;
+}
+.save-style {
+  display: grid;
+  gap: 8px;
+  padding-top: 15px;
+}
+.save-style > button {
+  background: #354e40;
+  color: white;
+}
+.save-style label {
+  display: grid;
+  gap: 5px;
+}
+.brand-form {
+  display: grid;
+  gap: 15px;
+}
+.brand-form label {
+  display: grid;
+  gap: 7px;
+}
+.brand-form input,
+.brand-form select {
+  width: 100%;
+  min-width: 0;
+}
+.brand-form input:not([type="color"]):not([type="range"]),
+.brand-form select {
+  padding: 10px;
+  border: 1px solid #c5d0bd;
+  border-radius: 5px;
+}
+.brand-palette {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.brand-palette input[type="color"] {
+  height: 38px;
+  padding: 3px;
+}
+.brand-form p {
+  font-size: 12px;
+  line-height: 1.7;
+}
 :root {
   font-family: "DM Sans Variable", Arial, sans-serif;
   color: #303c33;

@@ -1,5 +1,19 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
   ArrowUpRight,
   Braces,
   ChevronRight,
@@ -21,7 +35,7 @@ import {
   X,
 } from "lucide-react";
 import {
-  BlockContent,
+  SortableBlock,
   blockNames,
 } from "../vendor/formlane/src/components/Blocks";
 import {
@@ -39,12 +53,27 @@ import type { VoiceMessage } from "../vendor/formlane/src/voice-protocol";
 import { presets } from "../vendor/styler/src/styles/presets";
 import { useGeneration } from "../vendor/styler/src/generation/useGeneration";
 import {
-  properties,
-  parseStyle,
   type Style,
   type Property,
+  type SelectorId,
 } from "../vendor/styler/shared/style";
-import type { Snapshot } from "../vendor/styler/shared/constraints";
+import {
+  parseSnapshot,
+  toggleConstraint,
+  type Snapshot,
+} from "../vendor/styler/shared/constraints";
+import { StyleInspector } from "./StyleInspector";
+import {
+  emptyStyle,
+  declarationValue,
+  editDeclaration,
+  setLock,
+  visibleStyle,
+  savedStyle,
+} from "./style-tools";
+import { BrandDialog } from "./BrandDialog";
+import { applyBrand, type BrandDraft } from "./brand";
+import { moveBlock, duplicateBlock, removeBlock } from "./blocks";
 import { BorderLab } from "../vendor/border/src/main";
 import { loadImage, type Source } from "../vendor/border/src/images";
 import { embedBorderSource } from "./border-source";
@@ -70,7 +99,6 @@ import {
   download,
   exportWebsite,
   pageMarkup,
-  styleCSS,
 } from "./design";
 import { Preview } from "./Preview";
 import { Shadow } from "./Shadow";
@@ -78,6 +106,9 @@ import { Shadow } from "./Shadow";
 type Tab = "build" | "style" | "border";
 type Pending = {
   style?: Style;
+  baseline?: Style;
+  baselineConstraints?: Snapshot;
+  brand?: BrandDraft;
   border?: Page["borders"][number];
   importedStyle?: { result: StyleImport; brand: string | null };
   target: string;
@@ -108,7 +139,14 @@ export function App() {
   const page = w.pages.find((p) => p.id === w.activePage)!;
   const [tab, setTab] = useState<Tab>("build");
   const [modal, setModal] = useState<
-    "new" | "import" | "website" | "code" | "assistant" | "voice" | null
+    | "new"
+    | "import"
+    | "website"
+    | "brand"
+    | "code"
+    | "assistant"
+    | "voice"
+    | null
   >(null);
   const [status, setStatus] = useState(
     initial.error || "Saved on this browser",
@@ -125,6 +163,14 @@ export function App() {
   const [code, setCode] = useState({ html: "", css: "" });
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [constraints, setConstraints] = useState<Snapshot>([]);
+  const [inspiration, setInspiration] = useState<Style | null>(null);
+  const [computed, setComputed] = useState<Record<string, string>>({});
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 7 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
   const [borderOpened, setBorderOpened] = useState(false);
   const [borderEditor, setBorderEditor] = useState<{
     revision: number;
@@ -175,7 +221,39 @@ export function App() {
     setSelectionLabel("");
     setScope("page");
     setConstraints([]);
+    setComputed({});
   }
+  function navigateHistory(type: "undo" | "redo") {
+    clearPreview();
+    dispatch({ type });
+  }
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        modal ||
+        !(event.ctrlKey || event.metaKey) ||
+        event.altKey
+      )
+        return;
+      if (
+        event
+          .composedPath()
+          .some(
+            (node) =>
+              node instanceof HTMLElement &&
+              (node.matches("input,textarea,select") || node.isContentEditable),
+          )
+      )
+        return;
+      const key = event.key.toLowerCase();
+      if (key !== "z" && key !== "y") return;
+      event.preventDefault();
+      navigateHistory(key === "y" || event.shiftKey ? "redo" : "undo");
+    };
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  }, [modal]);
   function openPage(id: string) {
     clearPreview();
     commit({ ...w, activePage: id });
@@ -185,13 +263,106 @@ export function App() {
       setStatus("The workspace has reached its 40-page limit.");
       return;
     }
-    const p = createPage(kind);
+    const p = createPage(kind, w.brandTheme);
     clearPreview();
     commit({ ...w, pages: [...w.pages, p], activePage: p.id });
     setModal(null);
     setTab("build");
   }
   const target = scope === "component" ? selected : "page";
+  const currentStyle =
+    pending?.style ??
+    page.styles.find((s) => s.target === target)?.style ??
+    emptyStyle;
+  const effectiveStyle = useMemo(
+    () => visibleStyle(currentStyle, constraints),
+    [currentStyle, constraints],
+  );
+  function stageStyle(style: Style) {
+    if (!target) return;
+    setPending({
+      style,
+      target,
+      baseline: pending?.baseline ?? currentStyle,
+      baselineConstraints: pending?.baselineConstraints ?? constraints,
+    });
+  }
+  function editStyle(selector: SelectorId, property: Property, value?: string) {
+    stageStyle(editDeclaration(currentStyle, selector, property, value));
+    setConstraints(
+      value === undefined
+        ? constraints.filter(
+            (c) => c.selectorId !== selector || c.property !== property,
+          )
+        : setLock(constraints, selector, property, value),
+    );
+  }
+  function resetDeclaration(selector: SelectorId, property: Property) {
+    stageStyle(
+      editDeclaration(
+        currentStyle,
+        selector,
+        property,
+        declarationValue(pending?.baseline ?? currentStyle, selector, property),
+      ),
+    );
+    const previous = pending?.baselineConstraints?.find(
+      (c) => c.selectorId === selector && c.property === property,
+    );
+    setConstraints(
+      parseSnapshot([
+        ...constraints.filter(
+          (c) => c.selectorId !== selector || c.property !== property,
+        ),
+        ...(previous ? [previous] : []),
+      ]),
+    );
+  }
+  function changeConstraint(
+    selector: SelectorId,
+    property: Property,
+    state: "locked" | "unset",
+    value?: string,
+  ) {
+    try {
+      const next = toggleConstraint(
+        constraints,
+        selector,
+        property,
+        state,
+        value,
+      );
+      if (
+        state === "locked" ||
+        constraints.some(
+          (c) =>
+            c.selectorId === selector &&
+            c.property === property &&
+            c.state === "locked",
+        )
+      )
+        stageStyle(currentStyle);
+      setConstraints(next);
+    } catch {
+      setStatus(
+        "That computed value is outside Styler’s supported CSS range. Enter a supported value to lock it.",
+      );
+    }
+  }
+  function saveStyle(name: string) {
+    try {
+      if ((w.savedStyles?.length ?? 0) >= 50) return false;
+      return commit({
+        ...w,
+        savedStyles: [
+          ...(w.savedStyles ?? []),
+          savedStyle(effectiveStyle, name),
+        ],
+      });
+    } catch {
+      return false;
+    }
+  }
   const borderContext = useRef("");
   borderContext.current = `${page.id}:${target}`;
   const appliedBorder = page.borders.find((border) => border.target === target);
@@ -200,10 +371,19 @@ export function App() {
       setStatus("Select a component in the preview first.");
       return;
     }
-    setPending({ style, target });
+    setPending({
+      style,
+      target,
+      baseline: style,
+      baselineConstraints: constraints,
+    });
   }
   function apply() {
     if (!pending) return;
+    if (pending.brand) {
+      if (commit(applyBrand(w, pending.brand))) clearPreview();
+      return;
+    }
     if (pending.importedStyle) {
       const { result, brand } = pending.importedStyle;
       if (
@@ -225,7 +405,7 @@ export function App() {
         ? {
             styles: [
               ...page.styles.filter((s) => s.target !== pending.target),
-              { target: pending.target, style: pending.style },
+              { target: pending.target, style: effectiveStyle },
             ],
           }
         : {
@@ -240,26 +420,42 @@ export function App() {
       setStatus("Applied. Undo is available.");
     }
   }
-  const previewPage = pending?.importedStyle
-    ? withImportedStyle(page, pending.importedStyle.result)
-    : page;
-  const previewCSS = pending?.style
-    ? styleCSS(pending.style, pending.target)
-    : pending?.border
-      ? borderCSS(pending.border.settings, pending.border.source)
-          .replaceAll(";\n", " !important;\n")
-          .replace(
-            ".framed-box",
-            pending.target === "page"
-              ? ".fe-page"
-              : `[data-fe-id="${pending.target}"]`,
-          )
-      : "";
+  const previewWorkspace = useMemo(
+    () => (pending?.brand ? applyBrand(w, pending.brand) : w),
+    [w, pending?.brand],
+  );
+  const previewPage = useMemo(() => {
+    const base = pending?.importedStyle
+      ? withImportedStyle(page, pending.importedStyle.result)
+      : previewWorkspace.pages.find((p) => p.id === page.id)!;
+    return pending?.style
+      ? {
+          ...base,
+          styles: [
+            ...base.styles.filter((s) => s.target !== pending.target),
+            { target: pending.target, style: effectiveStyle },
+          ],
+        }
+      : base;
+  }, [page, pending, previewWorkspace, effectiveStyle]);
+  const previewCSS = pending?.border
+    ? borderCSS(pending.border.settings, pending.border.source)
+        .replaceAll(";\n", " !important;\n")
+        .replace(
+          ".framed-box",
+          pending.target === "page"
+            ? ".fe-page"
+            : `[data-fe-id="${pending.target}"]`,
+        )
+    : "";
   const assistantProject = useMemo(() => {
     const p = createProject();
     p.name = w.name;
     p.brand = w.name.slice(0, 40);
-    if (page.builderTheme) p.theme = page.builderTheme;
+    if (page.builderTheme) {
+      const { palette: _palette, ...theme } = page.builderTheme;
+      p.theme = theme;
+    }
     if (page.kind !== "html" && page.kind !== "form")
       p.pages[page.kind] = page.blocks;
     return p;
@@ -321,6 +517,10 @@ export function App() {
           <button onClick={() => setModal("voice")}>
             <Volume2 size={16} />
             Talk
+          </button>
+          <button onClick={() => setModal("brand")}>
+            <Palette size={16} />
+            Brand
           </button>
           <button onClick={() => setModal("import")}>
             <FolderOpen size={16} />
@@ -451,8 +651,7 @@ export function App() {
                 aria-label="Undo"
                 disabled={!state.past.length}
                 onClick={() => {
-                  dispatch({ type: "undo" });
-                  setPending(null);
+                  navigateHistory("undo");
                 }}
               >
                 <Undo2 size={16} />
@@ -461,8 +660,7 @@ export function App() {
                 aria-label="Redo"
                 disabled={!state.future.length}
                 onClick={() => {
-                  dispatch({ type: "redo" });
-                  setPending(null);
+                  navigateHistory("redo");
                 }}
               >
                 <Redo2 size={16} />
@@ -586,9 +784,11 @@ export function App() {
                   className="builder-canvas"
                   style={mobile ? { maxWidth: 390 } : undefined}
                 >
-                  <Shadow css={baseCSS + "\n" + pageCSS({ ...page, css: "" })}>
+                  <Shadow
+                    css={baseCSS + "\n" + pageCSS({ ...previewPage, css: "" })}
+                  >
                     <div className="fe-nav">
-                      <strong>{w.name}</strong>
+                      <strong>{previewWorkspace.name}</strong>
                       {w.pages.map((p) => (
                         <a
                           key={p.id}
@@ -602,57 +802,89 @@ export function App() {
                         </a>
                       ))}
                     </div>
-                    <div
-                      className={`fe-page prototype-canvas ${page.kind === "dashboard" ? "dashboard-grid" : ""}`}
-                      data-template={page.kind}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={({ active, over }) => {
+                        if (over && active.id !== over.id)
+                          patchPage(
+                            moveBlock(
+                              page,
+                              String(active.id),
+                              page.blocks.findIndex((b) => b.id === over.id),
+                            ),
+                          );
+                      }}
                     >
-                      {page.blocks.map((block) => (
+                      <SortableContext
+                        items={page.blocks.map((b) => b.id)}
+                        strategy={
+                          page.kind === "dashboard"
+                            ? rectSortingStrategy
+                            : verticalListSortingStrategy
+                        }
+                      >
                         <div
-                          key={block.id}
-                          className="fe-block canvas-block"
-                          data-block-type={block.type}
-                          data-text-appearance={
-                            block.type === "text"
-                              ? (block.appearance ?? "plain")
-                              : undefined
-                          }
-                          data-fe-id={block.id}
-                          data-selected={selected === block.id}
-                          onClick={() => {
-                            setSelected(block.id);
-                            setSelectionLabel(blockNames[block.type]);
-                          }}
+                          className={`fe-page prototype-canvas ${page.kind === "dashboard" ? "dashboard-grid" : ""}`}
+                          data-template={page.kind}
                         >
-                          <BlockContent
-                            block={block}
-                            template={page.kind as PageId}
-                            preview={false}
-                            update={(next) =>
-                              patchPage({
-                                blocks: page.blocks.map((b) =>
-                                  b.id === next.id ? next : b,
-                                ),
-                              })
-                            }
-                          />
+                          {page.blocks.map((block, index) => (
+                            <SortableBlock
+                              key={block.id}
+                              block={block}
+                              template={page.kind as PageId}
+                              preview={false}
+                              selected={selected === block.id}
+                              select={() => {
+                                setSelected(block.id);
+                                setSelectionLabel(blockNames[block.type]);
+                              }}
+                              index={index}
+                              count={page.blocks.length}
+                              move={(to) =>
+                                patchPage(moveBlock(page, block.id, to))
+                              }
+                              duplicate={() =>
+                                patchPage(duplicateBlock(page, block.id))
+                              }
+                              remove={() => {
+                                patchPage(removeBlock(page, block.id));
+                                setSelected("");
+                              }}
+                              update={(next) =>
+                                patchPage({
+                                  blocks: page.blocks.map((b) =>
+                                    b.id === next.id ? next : b,
+                                  ),
+                                })
+                              }
+                            />
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </SortableContext>
+                    </DndContext>
                   </Shadow>
                 </div>
               ) : (
                 <Preview
-                  workspace={w}
+                  workspace={previewWorkspace}
                   page={previewPage}
                   mobile={mobile}
                   selected={tab === "style" ? selected : ""}
                   css={previewCSS}
+                  inspectionTarget={tab === "style" ? target : undefined}
+                  inspect={setComputed}
+                  onHistory={navigateHistory}
                   select={
                     tab === "style" && !previewMode
                       ? (id, label) => {
                           setSelected(id);
                           setSelectionLabel(label);
-                          if (scope === "component") setPending(null);
+                          if (scope === "component") {
+                            setPending(null);
+                            setConstraints([]);
+                            setComputed({});
+                          }
                         }
                       : undefined
                   }
@@ -668,15 +900,26 @@ export function App() {
                         {pending.style?.name ??
                           (pending.importedStyle
                             ? "Imported website style"
-                            : "Border image")}
+                            : pending.brand
+                              ? "Brand preview"
+                              : "Border image")}
                       </strong>{" "}
                       · Preview only ·{" "}
-                      {pending.target === "page"
-                        ? "Whole page"
-                        : "Selected component"}
+                      {pending.brand?.allPages
+                        ? "All pages and new pages"
+                        : pending.target === "page"
+                          ? "Whole page"
+                          : "Selected component"}
                     </span>
                   </div>
-                  <button onClick={() => setPending(null)}>Discard</button>
+                  <button
+                    onClick={() => {
+                      setPending(null);
+                      setConstraints(pending.baselineConstraints ?? []);
+                    }}
+                  >
+                    Discard
+                  </button>
                   <button className="primary" onClick={apply}>
                     Apply to design <ArrowUpRight size={15} />
                   </button>
@@ -720,7 +963,7 @@ export function App() {
                         </button>
                       ))}
                     </div>
-                    {selected && (
+                    {page.blocks.some((b) => b.id === selected) && (
                       <div className="selection-tools">
                         <strong>Selected: {selectionLabel}</strong>
                         <div>
@@ -730,13 +973,15 @@ export function App() {
                               0
                             }
                             onClick={() => {
-                              const blocks = [...page.blocks],
-                                i = blocks.findIndex((b) => b.id === selected);
-                              [blocks[i - 1], blocks[i]] = [
-                                blocks[i],
-                                blocks[i - 1],
-                              ];
-                              patchPage({ blocks });
+                              patchPage(
+                                moveBlock(
+                                  page,
+                                  selected,
+                                  page.blocks.findIndex(
+                                    (b) => b.id === selected,
+                                  ) - 1,
+                                ),
+                              );
                             }}
                           >
                             Move up
@@ -747,13 +992,15 @@ export function App() {
                               page.blocks.length - 1
                             }
                             onClick={() => {
-                              const blocks = [...page.blocks],
-                                i = blocks.findIndex((b) => b.id === selected);
-                              [blocks[i + 1], blocks[i]] = [
-                                blocks[i],
-                                blocks[i + 1],
-                              ];
-                              patchPage({ blocks });
+                              patchPage(
+                                moveBlock(
+                                  page,
+                                  selected,
+                                  page.blocks.findIndex(
+                                    (b) => b.id === selected,
+                                  ) + 1,
+                                ),
+                              );
                             }}
                           >
                             Move down
@@ -761,11 +1008,7 @@ export function App() {
                           <button
                             disabled={page.blocks.length <= 1}
                             onClick={() => {
-                              patchPage({
-                                blocks: page.blocks.filter(
-                                  (b) => b.id !== selected,
-                                ),
-                              });
+                              patchPage(removeBlock(page, selected));
                               setSelected("");
                             }}
                           >
@@ -826,6 +1069,8 @@ export function App() {
                     onChange={(e) => {
                       setScope(e.target.value as "page" | "component");
                       setPending(null);
+                      setConstraints([]);
+                      setComputed({});
                     }}
                   >
                     <option value="page">Whole page</option>
@@ -846,20 +1091,64 @@ export function App() {
                       style={style}
                       selected={pending?.style?.id === style.id}
                       onClick={() => choose(style)}
+                      inspired={inspiration?.id === style.id}
+                      onInspire={() =>
+                        setInspiration(
+                          inspiration?.id === style.id ? null : style,
+                        )
+                      }
                     />
                   ))}
                 </div>
+                <p className="inspiration-note" role="status">
+                  {inspiration
+                    ? `Inspiration: ${inspiration.name}`
+                    : "No inspiration selected."}
+                  {inspiration && (
+                    <button onClick={() => setInspiration(null)}>
+                      Clear inspiration
+                    </button>
+                  )}
+                </p>
+                {!!w.savedStyles?.length && (
+                  <section aria-label="Saved styles">
+                    <h3>Saved styles</h3>
+                    <div className="style-grid">
+                      {w.savedStyles.map((style) => (
+                        <div key={style.id}>
+                          <StyleTile
+                            style={style}
+                            selected={pending?.style?.id === style.id}
+                            onClick={() => choose(style)}
+                            inspired={inspiration?.id === style.id}
+                            onInspire={() =>
+                              setInspiration(
+                                inspiration?.id === style.id ? null : style,
+                              )
+                            }
+                          />
+                          <button
+                            aria-label={`Delete saved style ${style.name}`}
+                            onClick={() =>
+                              commit({
+                                ...w,
+                                savedStyles: w.savedStyles!.filter(
+                                  (s) => s.id !== style.id,
+                                ),
+                              })
+                            }
+                          >
+                            Delete saved style
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
                 <button
                   className="ai-button"
                   disabled={generation.active || !target}
-                  onClick={() =>
-                    generation.generate(
-                      constraints,
-                      pending?.style ??
-                        page.styles.find((s) => s.target === target)?.style ??
-                        null,
-                    )
-                  }
+                  onClick={() => generation.generate(constraints, inspiration)}
                 >
                   <Sparkles size={16} />
                   {generation.active
@@ -878,6 +1167,14 @@ export function App() {
                           style={slot.style}
                           selected={pending?.style?.id === slot.id}
                           onClick={() => choose(slot.style!)}
+                          inspired={inspiration?.id === slot.style.id}
+                          onInspire={() =>
+                            setInspiration(
+                              inspiration?.id === slot.style!.id
+                                ? null
+                                : slot.style!,
+                            )
+                          }
                         />
                       ) : (
                         <div className="generation-slot">
@@ -900,97 +1197,23 @@ export function App() {
                     </div>
                   ))}
                 </div>
-                {pending?.style && (
-                  <details className="declarations">
-                    <summary>Edit style declarations</summary>
-                    <p className="fine-print">
-                      Valid edits update the preview. Lock to preserve a
-                      declaration in generated variations.
-                    </p>
-                    {pending.style.rules.map((rule) => (
-                      <div key={rule.selectorId}>
-                        <strong>{rule.selectorId}</strong>
-                        {rule.declarations.map((d) => (
-                          <label key={d.id}>
-                            <span>{d.property}</span>
-                            <input
-                              aria-label={`${rule.selectorId} ${d.property}`}
-                              defaultValue={d.value}
-                              key={pending.style!.id + d.id + d.value}
-                              onBlur={(e) => {
-                                if (!properties[d.property](e.target.value)) {
-                                  setStatus(
-                                    "That value is outside Styler’s supported CSS range.",
-                                  );
-                                  e.target.value = d.value;
-                                  return;
-                                }
-                                const style = parseStyle({
-                                  ...pending.style,
-                                  rules: pending.style!.rules.map((r) =>
-                                    r.selectorId === rule.selectorId
-                                      ? {
-                                          ...r,
-                                          declarations: r.declarations.map(
-                                            (v) =>
-                                              v.id === d.id
-                                                ? {
-                                                    ...v,
-                                                    value: e.target.value,
-                                                  }
-                                                : v,
-                                          ),
-                                        }
-                                      : r,
-                                  ),
-                                });
-                                setPending({ ...pending, style });
-                                setConstraints((old) =>
-                                  old.map((c) =>
-                                    c.selectorId === rule.selectorId &&
-                                    c.property === d.property
-                                      ? { ...c, value: e.target.value }
-                                      : c,
-                                  ),
-                                );
-                              }}
-                            />
-                            <input
-                              type="checkbox"
-                              aria-label={`Lock ${rule.selectorId} ${d.property}`}
-                              checked={constraints.some(
-                                (c) =>
-                                  c.selectorId === rule.selectorId &&
-                                  c.property === d.property,
-                              )}
-                              onChange={(e) =>
-                                setConstraints((old) =>
-                                  e.target.checked
-                                    ? [
-                                        ...old,
-                                        {
-                                          selectorId: rule.selectorId,
-                                          property: d.property as Property,
-                                          state: "locked",
-                                          value: d.value,
-                                        },
-                                      ]
-                                    : old.filter(
-                                        (c) =>
-                                          !(
-                                            c.selectorId === rule.selectorId &&
-                                            c.property === d.property
-                                          ),
-                                      ),
-                                )
-                              }
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    ))}
-                  </details>
-                )}
+                <StyleInspector
+                  key={`${page.id}:${target}:${currentStyle.id}`}
+                  style={effectiveStyle}
+                  baseline={pending?.baseline ?? currentStyle}
+                  constraints={constraints}
+                  computed={computed}
+                  edit={editStyle}
+                  reset={resetDeclaration}
+                  toggle={changeConstraint}
+                  save={saveStyle}
+                  disabled={
+                    !target ||
+                    !!pending?.brand ||
+                    !!pending?.importedStyle ||
+                    !!pending?.border
+                  }
+                />
                 <button
                   className="subtle-link"
                   onClick={() => setTab("border")}
@@ -1230,6 +1453,7 @@ export function App() {
                     clearPreview();
                     setStorageBlocked(false);
                     setBorderOpened(false);
+                    setInspiration(null);
                     setBorderEditor((old) => ({ revision: old.revision + 1 }));
                     setTab("build");
                   }
@@ -1285,6 +1509,19 @@ export function App() {
             }}
           />
         </div>
+      )}
+      {modal === "brand" && (
+        <BrandDialog
+          name={w.name}
+          theme={page.builderTheme ?? w.brandTheme}
+          close={() => setModal(null)}
+          preview={(brand) => {
+            clearPreview();
+            setPending({ brand, target: "page" });
+            setTab("style");
+            setModal(null);
+          }}
+        />
       )}
       {modal === "code" && (
         <Dialog title="HTML & CSS" close={() => setModal(null)} wide>
@@ -1361,7 +1598,9 @@ export function App() {
                     ? {
                         ...p,
                         blocks: review.next.pages[page.kind as PageId],
-                        builderTheme: review.next.theme,
+                        builderTheme: themeChanged
+                          ? review.next.theme
+                          : p.builderTheme,
                         styles: themeChanged
                           ? p.styles.filter((s) => s.target !== "page")
                           : p.styles,
@@ -1389,42 +1628,60 @@ function StyleTile({
   style,
   selected,
   onClick,
+  inspired,
+  onInspire,
 }: {
   style: Style;
   selected: boolean;
   onClick: () => void;
+  inspired?: boolean;
+  onInspire: () => void;
 }) {
   const color = (role: string, property: string, fallback: string) =>
     style.rules
       .find((r) => r.selectorId === role)
       ?.declarations.find((d) => d.property === property)?.value ?? fallback;
   return (
-    <button
-      className={`style-tile ${selected ? "selected" : ""}`}
-      aria-pressed={selected}
-      onClick={onClick}
-    >
-      <span
-        className="style-sample"
-        style={{
-          background: color("page", "background-color", "#f5f5ed"),
-          color: color("page", "color", "#30382d"),
-          fontFamily: color("heading", "font-family", "Georgia"),
-        }}
+    <div className="style-choice">
+      <button
+        className={`style-tile ${selected ? "selected" : ""}`}
+        aria-pressed={selected}
+        onClick={onClick}
       >
-        <span>
-          Aa
-          <span style={{ color: color("accent", "color", "#536b48") }}>↗</span>
+        <span
+          className="style-sample"
+          style={{
+            background: color("page", "background-color", "#f5f5ed"),
+            color: color("page", "color", "#30382d"),
+            fontFamily: color("heading", "font-family", "Georgia"),
+          }}
+        >
+          <span>
+            Aa
+            <span style={{ color: color("accent", "color", "#536b48") }}>
+              ↗
+            </span>
+          </span>
+          <i
+            style={{
+              background: color("button", "background-color", "#536b48"),
+            }}
+          />
+          <small>Make it yours.</small>
         </span>
-        <i
-          style={{ background: color("button", "background-color", "#536b48") }}
-        />
-        <small>Make it yours.</small>
-      </span>
-      <span>
-        {style.name}
-        <ArrowUpRight size={12} />
-      </span>
-    </button>
+        <span>
+          {style.name}
+          <ArrowUpRight size={12} />
+        </span>
+      </button>
+      <button
+        className="inspire-button"
+        aria-label={`Inspire ${style.id}`}
+        aria-pressed={!!inspired}
+        onClick={onInspire}
+      >
+        Inspire
+      </button>
+    </div>
   );
 }

@@ -10,6 +10,16 @@ Use Add a page or Browse templates for Webshop, Kanban board, Data table, Blog, 
 
 Open Styler at any time. Choose Whole page or Selected component. To select a component, click it in the preview while not in Preview mode. Choose a preset or Generate variations. Every variation is a preview until Apply to design. Discard cancels it; Undo and Redo are available. Generated styles include local Joker and Harlequin plus four AI expressions. There is no automatic generation or automatic application. Declaration editing validates a bounded CSS vocabulary. Lock declarations to preserve them in future generated variations.
 
+The CSS inspector remains available after applying a style. It shows computed values from representative elements in the current scope. Edit a value or add a supported declaration with the plus button; edits lock the value and stage a preview. Reset restores the declaration's starting value, and Delete removes it from the current style. Lock preserves the value across style choices and future generations. Unset only tells future generations to omit the declaration; it does not remove it from the current preview. Unsupported computed values are displayed but cannot be locked as-is. Page/target changes clear the session constraints.
+
+Each style has an Inspire button independent of selecting it for preview. Clear inspiration removes it. Generate variations explicitly captures the chosen inspiration and current constraints. Save style records the current bounded declaration style with its locks under a name, without applying it. Up to 50 saved styles persist inside the workspace and exported JSON; additive project import merges them. Delete saved style is undoable. Saved styles are not full-page snapshots. Unapplied previews, inspiration and generation constraints are session-only.
+
+## Shared brand and editing shortcuts
+
+Brand opens four themes (Grove, Atelier, Tide, Mono), palette colors, serif/sans headings, corner radius, and a shared brand name. Choose the current page or all existing and future pages, then Preview brand. Apply to design commits the choice in one undoable change; Discard cancels. Page-wide Styler layers on those pages are replaced while component layers, borders, custom CSS and content remain. New pages inherit the shared theme after an all-pages apply. Content-only AI proposals preserve manually edited palettes.
+
+Visual block toolbars have duplication and drag handles. Drag with a pointer, or focus a handle and use Space to pick up, arrow keys to move and Space to drop (Escape cancels). Move buttons remain available. Duplicate sections receive new IDs, including products/board items, and retain scoped styles and borders. Outside text fields, Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z or Ctrl+Y redoes. Text editing keeps native undo behavior.
+
 ## Optional borders
 
 Border Image is an optional tool users open deliberately. It supports samples, PNG/JPEG/WebP uploads, crop, slice, width, outset, repeat and AI help. Choose a target in Styler first, then open Border Image. Preview border in workspace transfers the border to the current target as a preview. Apply to design commits it. A rasterized image is embedded in the project and exported website.

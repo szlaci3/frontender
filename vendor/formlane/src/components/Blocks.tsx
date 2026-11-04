@@ -843,11 +843,12 @@ export function SortableBlock({
     <div
       ref={setNodeRef}
       data-block-id={block.id}
+      data-fe-id={block.id}
       data-block-type={block.type}
       data-text-appearance={
         block.type === "text" ? (block.appearance ?? "plain") : undefined
       }
-      className={`canvas-block ${selected && !preview ? "selected" : ""} ${isDragging ? "dragging" : ""}`}
+      className={`fe-block canvas-block ${selected && !preview ? "selected" : ""} ${isDragging ? "dragging" : ""}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       onClick={() => !preview && select()}
       onFocus={() => !preview && select()}
