@@ -103,6 +103,7 @@ import {
 } from "./design";
 import { Preview } from "./Preview";
 import { Shadow } from "./Shadow";
+import { SnapshotDialog } from "./SnapshotView";
 
 type Tab = "build" | "style" | "border";
 type Pending = {
@@ -144,6 +145,7 @@ export function App() {
     | "import"
     | "website"
     | "handout"
+    | "snapshot"
     | "brand"
     | "code"
     | "assistant"
@@ -535,6 +537,10 @@ export function App() {
           <button onClick={() => setModal("handout")}>
             <Download size={16} />
             PDF handout
+          </button>
+          <button onClick={() => setModal("snapshot")}>
+            <ArrowUpRight size={16} />
+            Share snapshot
           </button>
           <button
             className="primary"
@@ -1528,6 +1534,9 @@ export function App() {
             setModal(null);
           }}
         />
+      )}
+      {modal === "snapshot" && (
+        <SnapshotDialog workspace={w} close={() => setModal(null)} />
       )}
       {modal === "handout" && (
         <Dialog title="PDF handout" close={() => setModal(null)} wide>
