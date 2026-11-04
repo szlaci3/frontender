@@ -177,6 +177,41 @@ export function documentHTML(
       : "");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data:; script-src 'nonce-${nonce}'; connect-src 'none'; form-action 'none'; base-uri 'none'"><title>${escapeHTML(page.name)} — ${escapeHTML(workspace.name)}</title><style>${safeStyle((page.kind === "html" || page.kind === "form" ? htmlBaseCSS : baseCSS) + "\n" + pageCSS(page) + "\n" + previewCSS + (selected ? `\n[data-fe-id="${selected}"]{outline:2px solid #c16d3e;outline-offset:3px}` : ""))}</style></head><body><nav class="fe-nav"><strong>${escapeHTML(workspace.name)}</strong>${navigation}</nav><main class="fe-page prototype-canvas ${page.kind === "dashboard" ? "dashboard-grid" : ""}" data-template="${page.kind}">${pageMarkup(page)}</main><script nonce="${nonce}">${runtime}</script></body></html>`;
 }
+export function handoutHTML(workspace: Workspace, page: Page) {
+  const nonce = crypto.randomUUID().replaceAll("-", "");
+  const title = escapeHTML(page.name);
+  const styles = page.kind === "html" || page.kind === "form" ? htmlBaseCSS : baseCSS;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; form-action 'none'; base-uri 'none'">
+  <title>${title} — ${escapeHTML(workspace.name)}</title>
+  <style>${safeStyle(styles + "\n" + pageCSS(page))}</style>
+  <style>
+    .handout-heading { padding: 16px 24px; border-bottom: 1px solid #ccd3c7; background: #fff; color: #30382d; font: 16px Arial,sans-serif; }
+    .handout-heading strong { display: block; margin-bottom: 4px; font-size: 20px; }
+    .handout-controls { margin-bottom: 12px; }
+    .handout-controls button { padding: 8px 14px; border: 1px solid #354e40; border-radius: 6px; background: #354e40; color: white; font: inherit; }
+    @page { margin: 12mm; }
+    @media print {
+      html, body { margin: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .handout-controls { display: none !important; }
+      .handout-heading, h1, h2, h3 { break-after: avoid; }
+      .fe-page { min-height: 0; }
+      .fe-page img, .fe-page tr { break-inside: avoid; }
+      .fe-page .table-scroll { overflow: visible; }
+    }
+  </style></head><body>
+  <header class="handout-heading">
+    <div class="handout-controls"><button type="button">Print / Save as PDF</button></div>
+    <strong>${title}</strong>${escapeHTML(workspace.name)}
+  </header>
+  <main class="fe-page prototype-canvas ${page.kind === "dashboard" ? "dashboard-grid" : ""}" data-template="${page.kind}">${pageMarkup(page)}</main>
+  <script nonce="${nonce}">
+    document.querySelector('.handout-controls button').addEventListener('click', () => window.print());
+    document.addEventListener('click', event => { if (event.target.closest('a')) event.preventDefault(); });
+  </script></body></html>`;
+}
+
 export function exportWebsite(workspace: Workspace) {
   const files: Record<string, Uint8Array> = {};
   for (const page of workspace.pages)

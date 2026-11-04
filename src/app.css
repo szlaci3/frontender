@@ -959,6 +959,13 @@ dialog {
 dialog.wide-dialog {
   width: min(1040px, calc(100vw - 32px));
 }
+.handout-preview {
+  display: block;
+  width: 100%;
+  height: min(60vh, 720px);
+  border: 1px solid #dce3d4;
+  border-radius: 8px;
+}
 dialog::backdrop {
   background: #26342165;
   backdrop-filter: blur(3px);
@@ -1128,6 +1135,7 @@ dialog::backdrop {
 @media (max-width: 600px) {
   .top-actions {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
   }
   .wordmark {

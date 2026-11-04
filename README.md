@@ -34,6 +34,8 @@ HTML/CSS can be pasted through **Code**. Saving HTML for a block page explicitly
 
 Standalone export includes a page snapshot, embedded CSS and border images, navigation, and local demo interactions. It is a prototype: forms do not send messages, shops do not process payments, and no backend or AI keys are included. External image URLs in imported HTML still require a connection. Reopen the JSON project to continue editing in Frontender; the website ZIP is for viewing/hosting the result.
 
+Use **PDF handout → Print / Save as PDF** to print the current page or save a shareable PDF through your browser. The handout includes the applied design, page title, and workspace name.
+
 The active workspace uses browser localStorage, with a visible error if its quota is exceeded. Screenshot uploads are limited to 2.5 MB; project import is limited to 16 MB and 40 pages. Download project files for durable backups. This MVP has no accounts, cloud sync, automatic project-version merging or React-project export.
 
 Use **Import → Import website / Markdown** for public HTTPS website styles/content or locally parsed Markdown. Imported styles affect the current page, replacing its page-wide Styler layer while keeping component layers and borders. Optional brand renaming changes the workspace name. Content imports append selected sections to visual block pages (24 sections maximum); HTML/contact-form pages can still review and download Markdown. Applied imported palettes and source evidence travel in project JSON. Border drafts last for the current session; only applied borders are autosaved. Embedded border images use full-resolution PNG, limited to 4,000,000 data-URL characters.

@@ -98,6 +98,7 @@ import {
   pageCSS,
   download,
   exportWebsite,
+  handoutHTML,
   pageMarkup,
 } from "./design";
 import { Preview } from "./Preview";
@@ -142,6 +143,7 @@ export function App() {
     | "new"
     | "import"
     | "website"
+    | "handout"
     | "brand"
     | "code"
     | "assistant"
@@ -529,6 +531,10 @@ export function App() {
           <button onClick={exportProject}>
             <Download size={16} />
             Save project
+          </button>
+          <button onClick={() => setModal("handout")}>
+            <Download size={16} />
+            PDF handout
           </button>
           <button
             className="primary"
@@ -1522,6 +1528,17 @@ export function App() {
             setModal(null);
           }}
         />
+      )}
+      {modal === "handout" && (
+        <Dialog title="PDF handout" close={() => setModal(null)} wide>
+          <p>Print the current page with its applied design. Choose Save as PDF in the print dialog to share a file.</p>
+          <iframe
+            className="handout-preview"
+            title="Printable design"
+            sandbox="allow-scripts allow-modals"
+            srcDoc={handoutHTML(w, page)}
+          />
+        </Dialog>
       )}
       {modal === "code" && (
         <Dialog title="HTML & CSS" close={() => setModal(null)} wide>
