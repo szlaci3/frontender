@@ -184,7 +184,7 @@ export function VoiceChat({
               <p>
                 Your microphone audio goes directly to Google Gemini.
                 Transcripts stay on this page until you start again or reload;
-                they are not saved in your project. Gemini has the Formlane
+                they are not saved in your project. Gemini has the Frontender
                 product guide to explain features and workflows. This
                 conversation has no access to your project or application tools.
               </p>

@@ -104,6 +104,7 @@ import {
 import { Preview } from "./Preview";
 import { Shadow } from "./Shadow";
 import { SnapshotDialog } from "./SnapshotView";
+import { updateVoiceMessages } from "./voice-messages";
 
 type Tab = "build" | "style" | "border";
 type Pending = {
@@ -1642,7 +1643,9 @@ export function App() {
       {modal === "voice" && (
         <VoiceChat
           messages={messages}
-          onMessage={(m) => setMessages((old) => [...old, m])}
+          onMessage={(message) =>
+            setMessages((previous) => updateVoiceMessages(previous, message))
+          }
           resetTranscript={() => setMessages([])}
           close={() => setModal(null)}
         />

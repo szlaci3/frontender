@@ -36,6 +36,10 @@ Page content reads a public URL or accepts Paste Markdown. Markdown parsing stay
 
 ## Export
 
+PDF handout opens a print preview of the current page with its applied design, page title, and workspace name. Choose Print / Save as PDF, then choose a printer or save a PDF in the browser's print dialog.
+
+Share snapshot creates a view-only link for the applied design and its linked pages. Anyone with the link can view it without an account. The link contains a fixed copy of the design and does not include reference screenshots or saved presets. For designs too large for a link, use Export website or PDF handout.
+
 Export website downloads a ZIP of standalone linked HTML pages with CSS and local demo JavaScript. Open index.html. This is a prototype, without checkout, form delivery, accounts or provider keys. Use the Frontender JSON project file, not the website ZIP, to restore editable work.
 
 ## AI and voice
