@@ -190,7 +190,7 @@ export function BorderLab({
   const [tab, setTab] = useState("explore"),
     [shape, setShape] = useState("wide"),
     [background, setBackground] = useState("paper"),
-    [label, setLabel] = useState("Good things take shape.");
+    [label, setLabel] = useState("Shapes define things. The best shapes define the best things. What is your favorite shape?");
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(""),
     [suggestions, setSuggestions] = useState<{
