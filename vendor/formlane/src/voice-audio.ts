@@ -1,5 +1,9 @@
 import captureUrl from "./voice-capture.worklet.js?url";
 
+const MAX_QUEUED_AUDIO_SECONDS = 180;
+
+export class VoicePlaybackError extends Error {}
+
 // Keep the fractional position between batches (including at 44.1 kHz).
 export class PcmEncoder {
   private position = 0;
@@ -29,13 +33,17 @@ export class PcmEncoder {
 
 export function decodePcm(data: string, mimeType: string) {
   if (!/^audio\/pcm(?:;|$)/.test(mimeType) || data.length > 2_000_000)
-    throw new Error("Gemini returned an unsupported audio format.");
+    throw new VoicePlaybackError(
+      "Gemini returned an unsupported audio format.",
+    );
   const rate = Number(/rate=(\d+)/.exec(mimeType)?.[1] ?? 24_000);
   if (rate < 8000 || rate > 48000)
-    throw new Error("Gemini returned an invalid audio sample rate.");
+    throw new VoicePlaybackError(
+      "Gemini returned an invalid audio sample rate.",
+    );
   const binary = atob(data);
   if (!binary.length || binary.length % 2)
-    throw new Error("Gemini returned invalid PCM audio.");
+    throw new VoicePlaybackError("Gemini returned invalid PCM audio.");
   const samples = new Float32Array(binary.length / 2);
   for (let i = 0; i < samples.length; i++) {
     const value =
@@ -124,9 +132,13 @@ export class BrowserVoiceAudio implements VoiceAudio {
     const context = this.context;
     if (!context || this.disposed) return;
     const { samples, rate } = decodePcm(data, mimeType);
-    if (this.nextTime - context.currentTime > 30)
-      throw new Error(
-        "Voice playback fell behind. Stop and start a new conversation.",
+    const start = Math.max(context.currentTime + 0.015, this.nextTime);
+    if (
+      start + samples.length / rate - context.currentTime >
+      MAX_QUEUED_AUDIO_SECONDS
+    )
+      throw new VoicePlaybackError(
+        "Gemini sent more audio than the browser can queue. Ask for a shorter reply in a new dialogue.",
       );
     const buffer = context.createBuffer(1, samples.length, rate);
     buffer.copyToChannel(samples, 0);
@@ -139,7 +151,6 @@ export class BrowserVoiceAudio implements VoiceAudio {
       source.disconnect();
       if (!this.sources.size) this.playback(false);
     };
-    const start = Math.max(context.currentTime + 0.015, this.nextTime);
     source.start(start);
     this.nextTime = start + buffer.duration;
     this.playback(true);

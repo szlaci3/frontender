@@ -16,6 +16,11 @@ const prompts = [
     'Answer very long, in 30 paragraphs. Give 30 numbered paragraphs explaining the Frontender workflow, with one or two full sentences per paragraph. Say each paragraph number aloud and end by saying "end of guide".',
   ],
 ];
+if (process.argv[2] === "colors")
+  prompts.push([
+    "colors",
+    "Suppose that a website already has a lot of red and a lot of blue on the screen, should I also add yellow?",
+  ]);
 const handler = createVoiceHandler({
   settings: () => ({ enabled: true, apiKey: process.env.GEMINI_API_KEY ?? "" }),
 });
@@ -59,6 +64,7 @@ async function run([name, prompt]) {
         firstAudioMs: firstAudio,
         elapsedMs: Date.now() - started,
         endMarker: /end of (the )?guide/i.test(transcript),
+        spokenSystemError: /system error occurred/i.test(transcript),
         boundaries,
         transcript,
       });
@@ -128,6 +134,7 @@ if (
     (r) =>
       r.outcome !== "complete" ||
       !r.audioSeconds ||
+      r.spokenSystemError ||
       (r.name === "long" && !r.endMarker),
   )
 )

@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PcmEncoder, decodePcm, type VoiceAudio } from "./voice-audio";
+import {
+  PcmEncoder,
+  decodePcm,
+  VoicePlaybackError,
+  type VoiceAudio,
+} from "./voice-audio";
 import { VoiceConversation } from "./voice";
 import { VoiceTranscript } from "./voice-transcript";
 import type { VoiceMessage } from "./voice-protocol";
@@ -182,6 +187,29 @@ afterEach(() => {
 });
 
 describe("native Dialog lifecycle", () => {
+  it("reports a playback failure separately from an unreadable provider event", async () => {
+    const h = harness();
+    await h.client.start();
+    h.receive({ setupComplete: {} });
+    vi.mocked(h.audio.append).mockImplementationOnce(() => {
+      throw new VoicePlaybackError(
+        "Gemini returned an unsupported audio format.",
+      );
+    });
+    h.receive({
+      serverContent: {
+        outputTranscription: { text: "Partial reply" },
+        modelTurn: { parts: [{ inlineData: { data: "AAAA" } }] },
+      },
+    });
+    expect(h.onError).toHaveBeenCalledWith(
+      "Gemini returned an unsupported audio format.",
+    );
+    expect(h.messages.find(({ role }) => role === "assistant")?.text).toBe(
+      "Partial reply",
+    );
+  });
+
   it("waits for setupComplete, sends continuous audio, processes every output part and both transcripts", async () => {
     vi.stubGlobal("WebSocket", { OPEN: 1 });
     const h = harness();

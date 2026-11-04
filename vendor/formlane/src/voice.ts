@@ -1,4 +1,8 @@
-import { BrowserVoiceAudio, type VoiceAudio } from "./voice-audio";
+import {
+  BrowserVoiceAudio,
+  VoicePlaybackError,
+  type VoiceAudio,
+} from "./voice-audio";
 import { VoiceTranscript } from "./voice-transcript";
 import {
   VOICE_SOCKET,
@@ -147,9 +151,11 @@ export class VoiceConversation {
             this.callbacks.onError(
               "This voice connection will end soon. Stop and start again when it ends; your transcript will stay here.",
             );
-        } catch {
+        } catch (error) {
           this.fail(
-            "The voice response could not be read or played. Please start again.",
+            error instanceof VoicePlaybackError
+              ? error.message
+              : "The voice response could not be read or played. Please start again.",
           );
         }
       };
