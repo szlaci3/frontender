@@ -27,3 +27,23 @@ test("streaming and final transcript updates keep one bubble per speaker per tur
   expect(messages.filter(({ role }) => role === "user")).toHaveLength(2);
   expect(messages[2].id).not.toBe(ids[0]);
 });
+
+test("background thinking can continue the same reply after turnComplete", () => {
+  let messages: VoiceMessage[] = [];
+  const transcript = new VoiceTranscript((message) => {
+    messages = updateVoiceMessages(messages, message);
+  });
+  transcript.receive({
+    outputTranscription: { text: "Let me think. " },
+    turnComplete: true,
+    interactionStatus: "IN_PROGRESS",
+  });
+  expect(messages[1].status).toBe("streaming");
+  transcript.receive({ outputTranscription: { text: "Here are the steps." } });
+  transcript.receive({ interactionStatus: "IDLE" });
+  expect(messages).toHaveLength(2);
+  expect(messages[1]).toMatchObject({
+    text: "Let me think. Here are the steps.",
+    status: "complete",
+  });
+});

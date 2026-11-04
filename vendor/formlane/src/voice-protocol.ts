@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const VOICE_MODEL = "gemini-3.8-live";
+export const VOICE_MODEL = "gemini-3.8-live-extended-thinking";
 export const VOICE_SOCKET =
   "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
 
@@ -22,6 +22,7 @@ export const voiceEventSchema = z.object({
       interrupted: z.boolean().optional(),
       turnComplete: z.boolean().optional(),
       generationComplete: z.boolean().optional(),
+      interactionStatus: z.string().optional(),
       modelTurn: z
         .object({
           parts: z.array(

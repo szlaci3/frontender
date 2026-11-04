@@ -135,7 +135,12 @@ export class VoiceConversation {
                     part.inlineData.mimeType ?? "audio/pcm;rate=24000",
                   );
             }
-            if (content.turnComplete && !this.playing)
+            if (
+              !this.playing &&
+              (content.interactionStatus === "IDLE" ||
+                (content.turnComplete &&
+                  content.interactionStatus !== "IN_PROGRESS"))
+            )
               this.callbacks.onStatus("listening");
           }
           if (message.goAway)

@@ -50,13 +50,15 @@ describe("native Dialog token endpoint", () => {
       "You have no browsing, retrieval, or application tools",
     );
     expect(body.setup).toMatchObject({
-      model: "models/gemini-3.8-live",
+      model: "models/gemini-3.8-live-extended-thinking",
       generationConfig: { responseModalities: ["AUDIO"] },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     });
     expect(body.setup.tools).toBeUndefined();
-    expect(body.setup.generationConfig.thinkingConfig).toBeUndefined();
+    expect(body.setup.generationConfig.thinkingConfig).toEqual({
+      thinkingLevel: "MEDIUM",
+    });
     expect(JSON.stringify(body)).not.toContain(settings.apiKey);
     expect(config).toMatchObject({
       path: "/api/voice-token",
@@ -74,7 +76,7 @@ describe("native Dialog token endpoint", () => {
       const response = await handler(new Request(`${origin}/api/voice-token`));
       expect(await response.json()).toEqual({
         enabled: false,
-        model: "gemini-3.8-live",
+        model: "gemini-3.8-live-extended-thinking",
       });
       expect((await handler(request())).status).toBe(503);
     }

@@ -7,6 +7,7 @@ export class VoiceTranscript {
   private current: Turn | null = null;
   private lateInput: Turn | null = null;
   private interruptedBoundary = false;
+  private awaitingIdle = false;
 
   constructor(private publish: (message: VoiceMessage) => void) {}
 
@@ -53,14 +54,20 @@ export class VoiceTranscript {
       this.publish({ ...turn.user });
       this.lateInput = null;
     }
-    if (content.turnComplete) {
+    if (
+      content.turnComplete ||
+      (this.awaitingIdle && content.interactionStatus === "IDLE")
+    ) {
       // interrupted → turnComplete can straddle the next input transcript.
       if (this.interruptedBoundary) this.interruptedBoundary = false;
+      else if (content.interactionStatus === "IN_PROGRESS")
+        this.awaitingIdle = true;
       else this.finish("complete");
     }
   }
 
   finish(status: VoiceMessage["status"]) {
+    this.awaitingIdle = false;
     const turn = this.current;
     if (!turn) return;
     turn.user.status = "complete";

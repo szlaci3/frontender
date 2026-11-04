@@ -294,6 +294,9 @@ test("replace import requires confirmation and cancels without losing work", asy
       localStorage.getItem("frontender.workspace.v1"),
     ));
   const project = JSON.parse(workspace!);
+  const savedName = () => page.evaluate(() => JSON.parse(
+    localStorage.getItem("frontender.workspace.v1") ?? "{}",
+  ).name);
   project.name = "Imported replacement";
   await page.getByRole("button", { name: "Import", exact: true }).click();
   await page.locator('input[type=file][accept=".json"]').setInputFiles({
@@ -305,16 +308,12 @@ test("replace import requires confirmation and cancels without losing work", asy
   await page
     .getByRole("button", { name: "Replace current workspace…" })
     .click();
-  await expect(
-    page.getByRole("textbox", { name: "Workspace name" }),
-  ).toHaveValue("A little possibility");
+  await expect.poll(savedName).toBe("A little possibility");
   page.once("dialog", (dialog) => dialog.accept());
   await page
     .getByRole("button", { name: "Replace current workspace…" })
     .click();
-  await expect(
-    page.getByRole("textbox", { name: "Workspace name" }),
-  ).toHaveValue("Imported replacement");
+  await expect.poll(savedName).toBe("Imported replacement");
   await expect(
     page.getByRole("button", { name: "Undo", exact: true }),
   ).toBeDisabled();
