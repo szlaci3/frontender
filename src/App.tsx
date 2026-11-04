@@ -502,22 +502,9 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <a href="#" className="wordmark" onClick={(e) => e.preventDefault()}>
-          <span className="brand-symbol">
-            f<span>↗</span>
-          </span>
+          <span className="brand-symbol">f</span>
           frontender<span className="beta">WORKSPACE</span>
         </a>
-        <div className="project-title">
-          <input
-            aria-label="Workspace name"
-            maxLength={80}
-            value={w.name}
-            onChange={(e) => {
-              if (e.target.value.trim()) commit({ ...w, name: e.target.value });
-            }}
-          />
-          <span className="save-dot" title={status} />
-        </div>
         <div className="top-actions">
           <button onClick={() => setModal("voice")}>
             <Volume2 size={16} />
