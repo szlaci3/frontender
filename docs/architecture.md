@@ -23,3 +23,11 @@ Generated CSS never enters the outer application. User HTML is sanitized and ren
 Project files include content, style definitions, embedded border images and screenshots. Additive import creates new page IDs, unique names and remaps generated internal page links. It does not attempt text-level merging of two versions of a page. Replacement explicitly warns users to export existing work first. Browser storage failures are surfaced, and unreadable saved data is preserved until the user explicitly replaces it.
 
 Extending the workspace: add a tool adapter that produces page changes or a pending preview; do not create a second persistence system. A new block type must have validation, editable rendering and standalone rendering. Imported HTML remains the general escape hatch.
+
+## Production AI and voice
+
+Root Netlify functions expose `/api/assistant`, `/api/voice-token`, `/api/health`, and `/api/{styler,border}/{generate,generation-status}`. Each generator uses its own Blobs store, signed background worker and hourly 24-hour cleanup. Atomic worker claims prevent duplicate provider calls on redelivery. Status polling never resubmits generation. The server dispatches only to trusted Netlify deploy metadata. Generation inputs are bounded and same-origin checked; start routes have a declared 10 requests/minute/IP/domain limit, assistant and voice 6. Hosted enforcement must be verified separately.
+
+Voice bundles `docs/formlane-guide.md` and issues a single-use, short-lived token constrained to the server-owned setup. No workspace content is sent by voice. Assistant proposals remain validated and require explicit review/apply. `GEMINI_API_KEY` must be configured for Netlify Functions, with optional assistant/voice disable flags.
+
+Explicit opt-in smoke check: `node --experimental-transform-types tests/live-ai.mjs`, optionally with `FRONTENDER_BASE_URL` set to the deployment origin. This makes one paid/provider request per feature, polls background results, and does not log tokens. It does not test microphone input or playback.

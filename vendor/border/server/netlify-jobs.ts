@@ -35,7 +35,7 @@ export function netlifyJobs(context?: Pick<Context, "deploy" | "site">) {
         throw new Error("Missing deploy context.");
       const origin = new URL(`https://${deploy}--${site}.netlify.app`);
       const response = await fetch(
-        new URL("/.netlify/functions/generate-background", origin),
+        new URL("/.netlify/functions/border-background", origin),
         {
           method: "POST",
           headers: {

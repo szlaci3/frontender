@@ -29,7 +29,7 @@ export async function requestStyle(input: object): Promise<unknown> {
   try {
     for (;;) {
       await pause(deadline);
-      const poll = await fetch(`/api/generation-status?job=${encodeURIComponent(jobId)}`, {
+      const poll = await fetch(`/api/styler/generation-status?job=${encodeURIComponent(jobId)}`, {
         cache: 'no-store', signal: AbortSignal.any([deadline, AbortSignal.timeout(15_000)]),
       });
       data = await dataFrom(poll);

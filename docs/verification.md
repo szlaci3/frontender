@@ -1,5 +1,12 @@
 # Verification — 2 November 2026
 
+## Production AI/voice integration — 4 November 2026
+
+- Added production assistant, voice-token and health functions; separate Styler/Border Image start/status/background/cleanup routes; bundled voice guide and declared platform rate limits.
+- Local checks: 120 unit tests, 23 Edge browser tests (one hosted-only check skipped), production build and credential scan passed. Browser execution required sandbox escalation.
+- Real local provider checks: Styler generation 19.4 s; assistant proposal 1.4 s; Border Image chat 10.7 s; voice-token creation 0.2 s. Each passed schema/shape validation. These are single requests, not reliability or quota tests. No microphone or audio playback was tested.
+- Hosted verification pending deployment of this change. Automatic approval review rejected the combined commit/push command because explicit authorization for a default-branch push/production deployment was required. No commit or push was performed; implementation remains local. The deployed voice route returned HTTP 404 before these changes.
+
 ## Styler, branding and editing update — 4 November 2026
 
 - `npm test`: 91 passed. New coverage checks immutable bounded edits, Lock versus Unset, browser-value normalization, saved-style portability/collision handling, shared branding/new-page inheritance, and nested-ID duplication with scoped layers.
@@ -10,7 +17,7 @@
 
 Run the new scenarios against the deployed build with `FRONTENDER_BASE_URL=https://szlaci3-frontender.netlify.app` and `npx playwright test tests/styler-brand.spec.ts tests/integration.spec.ts tests/hosted-imports.spec.ts`.
 
-Remaining original integration work: direct Formlane project-file migration, PDF handouts/shareable snapshots, and production AI/voice routes plus live-provider/microphone verification. Project libraries, accounts and automatic generation remain intentionally outside Frontender's scope.
+Remaining original integration work: PDF handouts/shareable snapshots and completion of production AI/voice verification. Direct Formlane project-file migration is explicitly out of scope (owner decision, 4 November 2026). Project libraries, accounts and automatic generation remain intentionally outside Frontender's scope.
 
 ## Integration update — 3 November 2026
 

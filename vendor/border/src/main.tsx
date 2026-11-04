@@ -266,7 +266,7 @@ export function BorderLab({
       while (Date.now() < deadline) {
         await new Promise((r) => setTimeout(r, 1500));
         const status = await fetch(
-          `/api/generation-status?job=${encodeURIComponent(result.jobId)}`,
+          `/api/border/generation-status?job=${encodeURIComponent(result.jobId)}`,
           { cache: "no-store", signal: AbortSignal.timeout(15_000) },
         );
         const body = await decode(status);

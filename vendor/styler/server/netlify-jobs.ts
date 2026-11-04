@@ -18,7 +18,7 @@ export function netlifyJobs(context?: Pick<Context, 'deploy' | 'site'>) {
       const deploy = context?.deploy.id, site = context?.site.name;
       if (!deploy || !site || !/^[a-zA-Z0-9-]+$/.test(deploy) || !/^[a-zA-Z0-9-]+$/.test(site)) throw new Error('Missing deploy context.');
       const origin = new URL(`https://${deploy}--${site}.netlify.app`);
-      const response = await fetch(new URL('/.netlify/functions/generate-background', origin), {
+      const response = await fetch(new URL('/.netlify/functions/styler-background', origin), {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'x-styler-signature': signature },
         body: JSON.stringify({ jobId }), redirect: 'error', signal: AbortSignal.timeout(10_000),
       });
